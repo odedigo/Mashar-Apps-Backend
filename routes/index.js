@@ -336,7 +336,7 @@ router.post("/api/lsn/saveform", (req, res) => {
  * @returns
  */
 export function validateRoleAllowed(req, roles) {
-  const jwtUser = util.validateToken(req.headers.cookie);
+  const jwtUser = util.validateToken(req.headers);
   if (!jwtUser) {
     return false;
   }

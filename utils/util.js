@@ -65,11 +65,16 @@ export function getTokenExpiration(delta) {
  * @param {*} token
  * @returns
  */
-export function validateToken(token) {
+export function validateToken(headers) {
+  let token = headers["x-access-token"] || headers["authorization"];
   if (token === undefined || token == null) return null;
-  var s = token.substring(token.indexOf("=") + 1);
+  // Remove Bearer from string
+  token = token.replace(/^Bearer\s+/, "");
+  if (token === undefined || token == null) return null;
+
+  //var s = token.substring(token.indexOf("=") + 1);
   try {
-    const decoded = jwt.verify(s, process.env.JWTSECRET);
+    const decoded = jwt.verify(token, process.env.JWTSECRET);
     return decoded;
   } catch (error) {
     return null;
@@ -93,7 +98,7 @@ export function getJwt(req) {
  * @returns
  */
 export function validateAdminUser(req, validatePage = false) {
-  const jwtUser = validateToken(req.headers.cookie);
+  const jwtUser = validateToken(req.headers);
   if (!jwtUser) {
     return { valid: false, jwt: null };
   }
