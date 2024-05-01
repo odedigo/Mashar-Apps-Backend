@@ -126,13 +126,13 @@ router.post("/api/user/role", (req, res) => {
   api_user.changeRole(req, res, jwt.jwtUser);
 });
 
-router.post("/api/user/edit", (req, res) => {
+router.post("/api/user/save", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid || !validateRoleAllowed(req, [Roles.ADMIN])) {
     res.redirect("/err");
     return;
   }
-  api_user.editUser(req, res, jwt.jwtUser);
+  api_user.saveUser(req, res, jwt.jwtUser);
 });
 
 /********* API ********** GAME ACTIONS ****************************************/
@@ -154,18 +154,6 @@ router.post("/api/game/list", (req, res) => {
     return;
   }
   api_game.getGameList(req, res, jwt.jwtUser);
-});
-
-/**
- * reset a game
- */
-router.post("/api/game/edit", (req, res) => {
-  const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid || !validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
-    res.status(400).json({ msg: strings.err.actionFailed });
-    return;
-  }
-  api_game.editGame(req, res, jwt.jwtUser);
 });
 
 /**
@@ -207,7 +195,7 @@ router.post("/api/game/create", (req, res) => {
 /**
  * Delete a game
  */
-router.post("/api/game/remove", (req, res) => {
+router.delete("/api/game/:uid/:branch?", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid || !validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(400).json({ msg: strings.err.actionFailed });
@@ -253,6 +241,16 @@ router.post("/api/game/upmap", storageMapS3.single("file"), (req, res) => {
 });
 
 /********************** MANAGEMENT ***********************************/
+
+router.post("/api/branch/list", (req, res) => {
+  const jwt = util.validateAdminUser(req, true);
+  if (!jwt.valid || !validateRoleAllowed(req, [Roles.SUPERADMIN])) {
+    res.status(400).json({ msg: strings.err.actionFailed });
+    return;
+  }
+  api_mng.getBranchList(req, res, jwt.jwtUser);
+});
+
 router.post("/api/mng/brnch", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid || !validateRoleAllowed(req, [Roles.SUPERADMIN])) {
@@ -299,18 +297,6 @@ router.post("/api/lsn/savegroups", (req, res) => {
     return;
   }
   api_lesson.saveLessonGroups(req, res, jwt.jwtUser);
-});
-
-/**
- * edit form
- */
-router.post("/api/lsn/formedit", (req, res) => {
-  const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid || !validateRoleAllowed(req, [Roles.ADMIN])) {
-    res.status(400).json({ msg: strings.err.actionFailed });
-    return;
-  }
-  api_lesson.editForm(req, res, jwt.jwtUser);
 });
 
 /**

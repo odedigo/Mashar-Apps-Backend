@@ -122,9 +122,22 @@ export async function getGameList(req, res, jwt) {
   const status = await StatusModel.find(filter);
   const result = createGameList(games, status);
 
-  res.status(200).json({ games: result });
+  res.status(200).json({ games: result, total: numGames });
 }
 
+/**
+ *
+ * @param {*} jwt
+ * @returns
+ */
+export async function getEntireGameList(jwt) {
+  // send query with pagination
+  var games = await GameModel.find({});
+  var numGames = await GameModel.countDocuments({});
+  const status = await StatusModel.find({});
+  const result = createGameList(games, status);
+  return result;
+}
 /**
  * gets a specific game
  * @param {*} gameName
@@ -183,7 +196,7 @@ export function saveGame(req, res, jwt) {
       theGame
         .save() // save it
         .then((ngame) => {
-          if (ngame) res.status(200).json({ msg: strings.ok.gameSaved, game: ngame, path: "/admin/th/gamelist" });
+          if (ngame) res.status(200).json({ game: ngame });
           else res.status(400).json({ msg: game.err.gameNotSaved });
         })
         .catch((error) => {
@@ -210,7 +223,7 @@ export function cloneGame(req, res, jwt) {
     return res.status(500);
   }
 
-  var { origGame, newGame, newBranch } = req.body;
+  var { origGame, newGame, newBranch } = req.body.clone;
   var filter = {
     gameName: origGame,
   };
@@ -253,7 +266,7 @@ export function cloneGame(req, res, jwt) {
         .then((ngame) => {
           if (ngame) {
             util.createMapFiles(game[0].uid, game[0].branch);
-            res.status(200).json({ msg: strings.ok.gameCloned, game: ngame });
+            res.status(200).json({ game: ngame });
           } else res.status(400).json({ msg: strings.err.gameNotCloned });
         })
         .catch((error) => {
@@ -263,44 +276,6 @@ export function cloneGame(req, res, jwt) {
     })
     .catch((err) => {
       console.log(err);
-      res.status(400).json({ msg: strings.err.gameNotFound });
-    });
-}
-
-/**
- * Edit a game
- *
- * @param {*} req
- * @param {*} res
- * @returns
- */
-export function editGame(req, res, jwt) {
-  // check if DB properly connected
-  if (!req.app.get("db_connected")) {
-    return res.status(500);
-  }
-
-  var { gameName } = req.body;
-  var filter = {
-    gameName,
-  };
-
-  // only super-admins can edit games outside their branch
-  if (jwt.role !== Roles.SUPERADMIN) {
-    filter["branch"] = jwt.branch;
-  }
-
-  // send query
-  GameModel.findOne(filter)
-    .then((game) => {
-      if (!game) {
-        res.status(400).json({ msg: strings.err.gameNotFound });
-        return;
-      }
-      res.status(200).json({ path: `/admin/th/editgame/${encodeURI(gameName)}` });
-    })
-    .catch((error) => {
-      console.log(error);
       res.status(400).json({ msg: strings.err.gameNotFound });
     });
 }
@@ -430,7 +405,7 @@ export async function createGame(req, res, jwt) {
     .then((ngame) => {
       if (ngame) {
         util.createMapFiles(ngame.uid, branch);
-        res.status(200).json({ msg: strings.ok.gameCreated, game: ngame });
+        res.status(200).json({ game: ngame });
       } else res.status(400).json({ msg: strings.err.gameNotCreated });
     })
     .catch((error) => {
@@ -451,9 +426,9 @@ export async function deleteGame(req, res, jwt) {
     return res.status(500);
   }
 
-  var { gameName, uid, branch } = req.body;
+  var { uid, branch } = req.params;
   if (!util.isValidValue(uid)) {
-    res.status(200).json({ result: { sucess: false, msg: strings.err.noData } });
+    res.status(400).json({ msg: strings.err.noData });
     return;
   }
 
@@ -472,7 +447,7 @@ export async function deleteGame(req, res, jwt) {
         res.status(400).json({ msg: strings.err.gameDeleteErr });
       } else {
         util.deleteMapFiles(uid, util.branchToCode(branch));
-        StatusModel.deleteOne({ gameCode: gameName }).then((d) => {
+        StatusModel.deleteOne({ gameCode: uid }).then((d) => {
           res.status(200).json({ msg: strings.ok.gameDeleteOK });
         });
       }
@@ -504,7 +479,7 @@ export function createGameList(games, status) {
   if (games == null) return res;
   games.forEach((game) => {
     var branch = util.codeToBranch(game.branch);
-    var active = game.active ? strings.gen.yes : strings.gen.no;
+    var active = Boolean(game.active);
     var activeGame = false;
     const gameStatus = status.filter((st) => st.gameCode === game.uid);
     if (gameStatus.length == 1 && gameStatus[0].active) activeGame = true;

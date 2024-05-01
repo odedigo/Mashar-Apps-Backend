@@ -268,7 +268,7 @@ export function changeRole(req, res) {
     });
 }
 
-export function editUser(req, res, jwt) {
+export function saveUser(req, res, jwt) {
   var { username, role, email } = req.body;
 
   if (!util.isValidValue(username) || !util.isValidValue(role) || !util.isValidValue(email)) {
