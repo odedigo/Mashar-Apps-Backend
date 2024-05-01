@@ -159,7 +159,7 @@ router.post("/api/game/list", (req, res) => {
 /**
  * start a game
  */
-router.post("/api/game/start", (req, res) => {
+router.get("/api/game/start/:gameCode/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid || !validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(400).json({ msg: strings.err.actionFailed });
@@ -171,7 +171,7 @@ router.post("/api/game/start", (req, res) => {
 /**
  * start a game
  */
-router.post("/api/game/stop", (req, res) => {
+router.get("/api/game/stop/:gameCode/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid || !validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(400).json({ msg: strings.err.actionFailed });

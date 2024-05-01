@@ -293,7 +293,7 @@ export function startGame(req, res, jwt) {
     return res.status(500);
   }
 
-  var { gameCode, branch } = req.body;
+  var { gameCode, branch } = req.params;
   if (!util.isValidValue(gameCode) || !util.isValidValue(branch)) {
     res.status(400).json({ result: { sucess: false, msg: strings.err.noData } });
     return;
@@ -301,7 +301,7 @@ export function startGame(req, res, jwt) {
 
   var filter = {
     gameCode,
-    branchCode: util.branchToCode(branch),
+    branchCode: branch,
   };
 
   var now = util.getCurrentDateTime();
@@ -319,12 +319,10 @@ export function startGame(req, res, jwt) {
   StatusModel.findOneAndUpdate(filter, update, options)
     .then((doc) => {
       if (!doc) {
-        logger.error("Failed to update team statusReport");
         res.status(400).json({ Error: strings.err.startGameErr });
       } else res.status(200).json({ msg: strings.ok.startGameOK });
     })
     .catch((err) => {
-      logger.errorM("catch in statusReport", err);
       res.status(400).json({ Error: strings.err.startGameErr });
     });
 }
@@ -342,7 +340,7 @@ export function stopGame(req, res, jwt) {
     return res.status(500);
   }
 
-  var { gameCode, branch } = req.body;
+  var { gameCode, branch } = req.params;
   if (!util.isValidValue(gameCode) || !util.isValidValue(branch)) {
     res.status(400).json({ result: { sucess: false, msg: strings.err.noData } });
     return;
@@ -350,7 +348,7 @@ export function stopGame(req, res, jwt) {
 
   var filter = {
     gameCode,
-    branchCode: util.branchToCode(branch),
+    branchCode: branch,
   };
 
   var now = util.getCurrentDateTime();
