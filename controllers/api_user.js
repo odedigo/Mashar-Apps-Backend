@@ -22,10 +22,7 @@ import config from "../config/config.js";
  * @param {*} req
  * @param {*} res
  */
-export async function logoutUser(req, res) {
-  res.cookie("cred", "", { maxAge: 9000000000, httpOnly: true, secure: true });
-  res.redirect("/");
-}
+export async function logoutUser(req, res) {}
 
 /**
  * Login

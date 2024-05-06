@@ -37,7 +37,7 @@ app.use("/", express.static("./public"));
 //Middlewares
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 
 //Routing
 app.use("/", routing); // routing module with all routes, which in turn points to controllers

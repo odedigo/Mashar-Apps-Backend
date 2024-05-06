@@ -40,7 +40,7 @@ export function validateEmail(email) {
  * @returns
  */
 export async function getOneTimeToken(user) {
-  const token = jwt.sign({ username: user.username.toLowerCase(), role: user.role, branch: user.branch, name: user.name }, process.env.JWTSECRET, { expiresIn: "10h" });
+  const token = jwt.sign({ username: user.username.toLowerCase(), role: user.role, branch: user.branch, branchName: codeToBranch(user.branch), name: user.name }, process.env.JWTSECRET, { expiresIn: "10h" });
   return token;
 }
 
@@ -214,7 +214,7 @@ export function getRiddleImages(branch, cb) {
       }).map((item) => {
         return item.Key.substring(item.Key.lastIndexOf("/") + 1);
       });
-      cb(list);
+      cb(err, list);
     },
     null
   );

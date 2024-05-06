@@ -74,14 +74,13 @@ export function handleGallery(req, res, jwt, err) {
  * @returns
  */
 export function handleGalleryDelete(req, res, jwt) {
-  const branchCode = req.body.branchCode;
+  const branchCode = req.params.branchCode;
   if (jwt.role !== Roles.SUPERADMIN) {
     if (branchCode !== jwt.branch) {
-      res.redirect("/err");
-      return;
+      return res.status(400).json({ msg: strings.err.invalidAction });
     }
   }
-  const { name, action } = req.body;
+  const name = req.params.name;
   if (name === "empty.png") {
     res.status(400).json({ msg: strings.err.cannotDeleteThisImage });
     return;

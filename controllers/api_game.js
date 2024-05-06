@@ -35,15 +35,15 @@ export function validateVector(req, res) {
   }
 
   // Find relevant document in DB that describes the game
-  var { gameName, team, vectorSize, vectorAngle } = req.body;
+  var { uid, team, index, vectorSize, vectorAngle } = req.params;
   if (!util.isValidValue(vectorAngle) || !util.isValidValue(vectorSize)) {
-    errMsg = strings.js.formEmpty;
+    var errMsg = strings.js.formEmpty;
     res.status(200).json({ result: { errMsg, infoMsg: "" } });
     return;
   }
 
   var query = {
-    gameName,
+    uid,
     active: true,
   };
 
@@ -57,7 +57,7 @@ export function validateVector(req, res) {
         var infoMsg = "";
         var success = -1;
 
-        var [success, errMsg, infoMsg] = func._checkVector(req.body, gameJson[team]);
+        var [success, errMsg, infoMsg] = func._checkVector(req.params, gameJson[team]);
         // add report so the teacher can monitor progress
         if (success > -1) func._reportStatus({ success: true, status: "Correct vector", stage: req.body.index }, team, gameJson.uid, gameJson.branch);
         else func._reportStatus({ success: false, status: "Bad vector", stage: req.body.index }, team, gameJson.uid, gameJson.branch);
@@ -87,7 +87,7 @@ export async function getGameList(req, res, jwt) {
   }
 
   // pagination
-  var page = req.params.param;
+  var page = req.params.page;
   const numPerPage = config.app.gameListPerPage;
   if (!util.isValidValue(page)) page = 1;
 
@@ -122,7 +122,7 @@ export async function getGameList(req, res, jwt) {
   const status = await StatusModel.find(filter);
   const result = createGameList(games, status);
 
-  res.status(200).json({ games: result, total: numGames });
+  res.status(200).json({ games: result, total: numGames, numPerPage });
 }
 
 /**
@@ -144,11 +144,12 @@ export async function getEntireGameList(jwt) {
  * @param {*} jwt
  * @returns
  */
-export async function getGame(gameName, jwt) {
-  if (!util.isValidValue(gameName)) return null;
+export function getGame(req, res, jwt) {
+  var uid = req.params.uid;
+  if (!util.isValidValue(uid)) return null;
 
   var filter = {
-    gameName,
+    uid,
   };
 
   // only super-admins can get games outside their branch
@@ -157,8 +158,27 @@ export async function getGame(gameName, jwt) {
   }
 
   // send query
-  const game = await GameModel.findOne(filter);
-  return game;
+  GameModel.findOne(filter)
+    .then((theGame) => {
+      var g = createGameObj(theGame, true);
+      res.status(200).json(g);
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.gameNotFound });
+    });
+}
+
+/**
+ * Gte riddle image list
+ * @param {*} req
+ * @param {*} res
+ * @param {*} jwt
+ */
+export function getImageList(req, res, jwt) {
+  util.getRiddleImages(req.params.branchCode, function (err, list) {
+    if (err == null) return res.status(200).json(list);
+    return res.status(400);
+  });
 }
 
 /**
@@ -174,9 +194,9 @@ export function saveGame(req, res, jwt) {
     return res.status(500);
   }
 
-  var { gameName } = req.body;
+  var uid = req.params.uid;
   var filter = {
-    gameName,
+    uid,
   };
 
   // only super-admins can save games outside their branch
@@ -266,7 +286,8 @@ export function cloneGame(req, res, jwt) {
         .then((ngame) => {
           if (ngame) {
             util.createMapFiles(game[0].uid, game[0].branch);
-            res.status(200).json({ game: ngame });
+            var g = createGameObj(ngame, true);
+            res.status(200).json(g);
           } else res.status(400).json({ msg: strings.err.gameNotCloned });
         })
         .catch((error) => {
@@ -403,7 +424,8 @@ export async function createGame(req, res, jwt) {
     .then((ngame) => {
       if (ngame) {
         util.createMapFiles(ngame.uid, branch);
-        res.status(200).json({ game: ngame });
+        var g = createGameObj(ngame, true);
+        res.status(200).json(g);
       } else res.status(400).json({ msg: strings.err.gameNotCreated });
     })
     .catch((error) => {
@@ -492,8 +514,14 @@ export function createGameList(games, status) {
  * @param {*} game
  * @returns
  */
-export function createGameObj(game) {
+export function createGameObj(game, outFormat = false) {
   var g = { gameName: game.gameName, branch: game.branch, date: game.date, version: game.version, active: game.active, red: _copyColor(game.red), blue: _copyColor(game.blue), green: _copyColor(game.green), uid: game.uid, readableName: game.readableName };
+  if (outFormat) {
+    g.branchCode = g.branch;
+    g.branch = util.codeToBranch(g.branchCode);
+    var d = util.getDateIL(g.date);
+    g.date = d;
+  }
   return g;
 }
 
@@ -510,6 +538,22 @@ function _convertRiddleToText(arr) {
     text = `${text}${arr[i].trim()}\n`;
   }
   return text;
+}
+
+function _convertTextToRiddle(text) {
+  var rid = [];
+  var arr = text.split("\n");
+  arr.forEach((line) => {
+    if (line.trim() !== "") rid.push(line.trim());
+  });
+  return rid;
+}
+
+function _convertRiddlesForSave(riddles) {
+  riddles.forEach((rdl) => {
+    rdl.riddle = _convertTextToRiddle(rdl.text);
+  });
+  return riddles;
 }
 
 /**
@@ -573,7 +617,12 @@ function _formatGameForSave(dbData, newData) {
   dbData.version = String((parseFloat(newData.version) + 0.1).toPrecision(2));
   dbData.active = newData.active == "true" ? true : false;
   dbData.date = util.getCurrentDateTime();
-  (dbData.branch = dbData.branch), (dbData.readableName = newData.readableName);
+  dbData.branch = dbData.branch;
+  dbData.readableName = newData.readableName;
+
+  newData.red.riddles = _convertRiddlesForSave(newData.red.riddles);
+  newData.blue.riddles = _convertRiddlesForSave(newData.blue.riddles);
+  newData.green.riddles = _convertRiddlesForSave(newData.green.riddles);
 
   dbData.red = newData.red;
   dbData.blue = newData.blue;
