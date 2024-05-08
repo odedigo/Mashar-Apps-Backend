@@ -67,50 +67,52 @@ export async function registerUser(req, res, jwt) {
   }
 
   // Find relevant document in DB that describes the game
-  var { username, password, name, branch, role, email } = req.body;
+  //var { username, password, name, branch, role, email } = req.body;
+  var user = req.body.user;
 
-  if (!util.isValidValue(username) || !util.isValidValue(password) || !util.isValidValue(name) || !util.isValidValue(branch) || !util.isValidValue(role)) {
+  if (!util.isValidValue(user.username) || !util.isValidValue(user.password) || !util.isValidValue(user.name) || !util.isValidValue(user.branch) || !util.isValidValue(user.role)) {
     return res.status(400).json({ msg: strings.err.formFillAll });
   }
-  username = username.toLowerCase();
+  var username = user.username.toLowerCase();
 
-  if (role === Roles.SUPERADMIN && jwt.role !== Roles.SUPERADMIN) {
+  if (user.role === Roles.SUPERADMIN && jwt.role !== Roles.SUPERADMIN) {
     return res.status(400).json({ msg: strings.err.actionErr });
   }
 
-  if (!util.validateEmail(username)) {
+  if (!util.validateEmail(user.username)) {
     return res.status(400).json({ msg: strings.err.usernameNotEmail });
   }
-  if (!util.isValidValue(email)) {
-    email = username;
-  } else if (!util.validateEmail(email)) {
+  if (!util.isValidValue(user.email)) {
     return res.status(400).json({ msg: strings.err.emailNotEmail });
   }
 
-  if (password.length < 6) {
+  if (user.password.length < 6) {
     return res.status(400).json({ msg: strings.err.passNotLong });
   }
 
   await UserModel.findOne({
     username,
   })
-    .then((user) => {
-      if (user) {
+    .then((userRsp) => {
+      if (userRsp) {
         res.status(400).json({ msg: strings.err.usernameTaken });
         return;
       }
-      bcrypt.hash(password, 10).then(async (hash) => {
+      bcrypt.hash(user.password, 10).then(async (hash) => {
         await UserModel.create({
           username,
           password: hash,
-          name,
-          email: email.toLowerCase(),
-          branch: util.branchToCode(branch),
-          role,
+          name: user.name,
+          email: user.email.toLowerCase(),
+          branch: user.branch,
+          role: user.role,
           token: "",
           created: util.getCurrentDateTime(),
         })
-          .then((user) => res.status(200).json({ msg: strings.ok.userRegOK }))
+          .then((newUser) => {
+            var us = createUser(newUser);
+            res.status(200).json(us);
+          })
           .catch((error) => res.status(400).json({ msg: strings.err.userRegErr }));
       });
     })
@@ -120,22 +122,22 @@ export async function registerUser(req, res, jwt) {
     });
 }
 
-export async function getUserList(param, jwt, perPage, forceBranch = null) {
-  const numPerPage = perPage;
-  var page = param;
+export async function getUserList(page, req, res, jwt, forceBranch = null) {
+  const numPerPage = config.app.userListPerPage;
   if (!util.isValidValue(page)) page = 1;
   var filter = {};
   if (jwt.role !== Roles.SUPERADMIN) filter["branch"] = jwt.branch;
   else if (util.isValidValue(forceBranch)) {
     filter["branch"] = forceBranch;
   }
-  const users = await UserModel.find(filter)
+  var users = await UserModel.find(filter)
     .limit(numPerPage)
     .skip(numPerPage * (page - 1))
     .sort({ branch: "desc", name: "asc" });
   var numUsers = await UserModel.countDocuments(filter);
   if (users == null) users = [];
-  return { users, numUsers };
+  users = createUserList(users);
+  res.status(200).json({ users, totalDocs: numUsers, numPerPage });
 }
 
 export async function countUsers(branch) {
@@ -150,6 +152,10 @@ export async function countUsers(branch) {
     else branchUsers[user.branch] = 1;
   });
   return branchUsers;
+}
+
+function createUser(user) {
+  return { name: user.name, branchName: util.codeToBranch(user.branch), branch: user.branch, email: user.email, username: user.username.toLowerCase(), role: user.role, created: util.getDateIL(user.created) };
 }
 
 export function createUserList(users) {
@@ -173,7 +179,7 @@ export function createUserList(users) {
 }
 
 export function deleteUser(req, res) {
-  var { username } = req.body;
+  var username = req.params.username;
 
   if (username === undefined) {
     res.status(400).json({ msg: strings.err.usernameInvalid });
@@ -192,17 +198,18 @@ export function deleteUser(req, res) {
 }
 
 export async function changePassword(req, res) {
-  var { username, password } = req.body;
-  if (username === undefined || password === undefined) {
+  //var { username, password } = req.body;
+  const user = req.body.user;
+  if (user.username === undefined || user.password === undefined) {
     res.status(400).json({ msg: strings.err.invalidData });
     return;
   }
-  if (!util.validateEmail(username)) {
+  if (!util.validateEmail(user.username)) {
     return res.status(400).json({ msg: strings.err.usernameNotEmail });
   }
-  username = username.toLowerCase();
+  var username = user.username.toLowerCase();
 
-  if (password.length < 6) {
+  if (user.password.length < 6) {
     return res.status(400).json({ msg: strings.err.passNotLong });
   }
 
@@ -215,7 +222,7 @@ export async function changePassword(req, res) {
     returnOriginal: false,
   };
 
-  bcrypt.hash(password, 10).then(async (hash) => {
+  bcrypt.hash(user.password, 10).then(async (hash) => {
     await UserModel.findOneAndUpdate(filter, { $set: { password: hash } }, options)
       .then((user) => {
         if (!user) {
@@ -266,21 +273,22 @@ export function changeRole(req, res) {
 }
 
 export function saveUser(req, res, jwt) {
-  var { username, role, email } = req.body;
+  //var { username, role, email } = req.body;
+  var user = req.body.user;
 
-  if (!util.isValidValue(username) || !util.isValidValue(role) || !util.isValidValue(email)) {
+  if (!util.isValidValue(user.username) || !util.isValidValue(user.role) || !util.isValidValue(user.email)) {
     res.status(400).json({ msg: strings.err.invalidData });
     return;
   }
-  if (!util.validateEmail(username)) {
+  if (!util.validateEmail(user.username)) {
     return res.status(400).json({ msg: strings.err.usernameInvalid });
   }
-  if (!util.validateEmail(email)) {
+  if (!util.validateEmail(user.email)) {
     return res.status(400).json({ msg: strings.err.emailNotEmail });
   }
 
   var filter = {
-    username: username.trim().toLowerCase(),
+    username: user.username.trim().toLowerCase(),
   };
 
   const options = {
@@ -288,11 +296,14 @@ export function saveUser(req, res, jwt) {
     returnOriginal: false,
   };
 
-  UserModel.findOneAndUpdate(filter, { $set: { role: role, email: email.trim().toLowerCase() } }, options)
-    .then((user) => {
-      if (!user) {
+  UserModel.findOneAndUpdate(filter, { $set: { role: user.role, email: user.email.trim().toLowerCase() } }, options)
+    .then((userRsp) => {
+      if (!userRsp) {
         res.status(400).json({ msg: strings.err.failedUpdatingUser });
         return;
+      }
+      if (util.isValidValue(user.password)) {
+        return changePassword(req, res);
       }
       res.status(200).json({ msg: strings.ok.userUpdateOK });
     })

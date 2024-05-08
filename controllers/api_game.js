@@ -168,6 +168,36 @@ export function getGame(req, res, jwt) {
     });
 }
 
+export function getGameAndStatus(req, res, jwt) {
+  var uid = req.params.uid;
+  if (!util.isValidValue(uid)) return null;
+
+  var filter = {
+    uid,
+  };
+
+  // only super-admins can get games outside their branch
+  if (jwt.role !== Roles.SUPERADMIN) {
+    filter["branch"] = jwt.branch;
+  }
+
+  // send query
+  GameModel.findOne(filter)
+    .then((theGame) => {
+      var g = createGameObj(theGame, true);
+      _calcGameStatus(uid)
+        .then((status) => {
+          res.status(200).json({ game: g, status });
+        })
+        .catch((err) => {
+          res.status(400).json({ msg: strings.err.gameNotFound });
+        });
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.gameNotFound });
+    });
+}
+
 /**
  * Gte riddle image list
  * @param {*} req
@@ -696,4 +726,69 @@ function _createEmptyRiddles() {
     r.push(rdl);
   }
   return r;
+}
+
+/********** GAME STATUS */
+
+async function _calcGameStatus(uid, branchCode) {
+  const status = await _getGameStatus(uid, branchCode);
+  if (!status.active) {
+    return { started: false };
+  }
+  return {
+    started: true,
+    startTime: status.startTime,
+    red: await _calcTeamStatus(status.red),
+    blue: await _calcTeamStatus(status.blue),
+    green: await _calcTeamStatus(status.green),
+  };
+}
+
+async function _getGameStatus(gameCode, branchCode) {
+  var info = {
+    active: false,
+    startTime: "",
+    red: [],
+    blue: [],
+    green: [],
+  };
+  // check if DB properly connected
+  if (!util.isValidValue(gameCode)) {
+    return info;
+  }
+
+  var filter = {
+    gameCode,
+  };
+
+  const status = await StatusModel.find(filter);
+  if (status.length !== 1) return info;
+
+  return {
+    active: status[0].active,
+    startTime: util.getDateIL(status[0].startTime),
+    red: status[0].red,
+    blue: status[0].blue,
+    green: status[0].green,
+  };
+}
+
+async function _calcTeamStatus(team) {
+  var teamInfo = {
+    stage: 1,
+    success: false,
+    numTries: 0,
+  };
+
+  if (team.length == 0) return teamInfo;
+
+  teamInfo.stage = team[team.length - 1].stage;
+  for (var i = team.length - 1; i >= 0; i--) {
+    if (team[i].stage < teamInfo.stage) break;
+    if (team[i].success) {
+      teamInfo.success = true;
+    }
+    teamInfo.numTries++;
+  }
+  return teamInfo;
 }

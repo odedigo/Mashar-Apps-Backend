@@ -91,15 +91,24 @@ router.post("/api/logout", (req, res) => {
 
 /********* API ********** USER ACTIONS ****************************************/
 
-router.post("/api/user/del", (req, res) => {
+/**
+ * User list
+ */
+router.get("/api/users/:page", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_user.getUserList(req.params.page, req, res, jwt.jwt);
+});
+
+router.delete("/api/user/:username", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid) return res.status(401);
   if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
     res.status(403);
-    return;
-  }
-  if (req.body.username === undefined) {
-    res.status(400).json({ msg: strings.err.usernameNotEmail });
     return;
   }
   api_user.deleteUser(req, res, jwt.jwt);
@@ -186,6 +195,19 @@ router.get("/api/game/:uid", (req, res) => {
     return;
   }
   api_game.getGame(req, res, jwt.jwt);
+});
+
+/**
+ * get game
+ */
+router.get("/api/game/status/:uid", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_game.getGameAndStatus(req, res, jwt.jwt);
 });
 
 /**
