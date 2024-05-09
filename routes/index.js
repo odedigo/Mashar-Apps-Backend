@@ -313,14 +313,24 @@ router.post("/api/branch/list", (req, res) => {
   api_mng.getBranchList(req, res, jwt.jwt);
 });
 
-router.post("/api/mng/brnch", (req, res) => {
+router.post("/api/mng/branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401);
   if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
     res.status(403);
     return;
   }
-  api_mng.handleBranch(req, res, jwt.jwt);
+  api_mng.addBranch(req, res, jwt.jwt);
+});
+
+router.delete("/api/mng/branch/:code", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.deleteBranch(req, res, jwt.jwt);
 });
 
 router.put("/api/game/gallery/:branchCode", function (req, res) {

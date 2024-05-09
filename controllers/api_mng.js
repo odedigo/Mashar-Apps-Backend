@@ -26,33 +26,36 @@ import * as api_game from "./api_game.js";
  * @param {*} jwt
  * @returns
  */
-export async function handleBranch(req, res, jwt) {
-  const { action, name, nick } = req.body;
+export async function addBranch(req, res, jwt) {
+  const { name, code } = req.body;
 
   const branches = await util.getBranchesForUser(jwt);
-  if (action === "new") {
-    if (!util.isValidValue(name) || !util.isValidValue(nick)) {
-      res.status(400).json({ msg: strings.err.branchNameInvalid });
-      return;
-    }
-    if (branches[nick] === undefined) util.addBranch(nick, name);
-    else {
-      res.status(400).json({ msg: strings.err.branchAlreadyDefined });
-      return;
-    }
-    createBranchFolders(res, nick);
-  } else if (action === "del") {
-    if (!util.isValidValue(nick)) {
-      res.status(400).json({ msg: strings.err.branchNameInvalid });
-      return;
-    }
-    if (branches[nick] !== undefined) util.deleteBranch(nick);
-    else {
-      res.status(400).json({ msg: strings.err.branchAlreadyDefined });
-      return;
-    }
-    deleteBranchFolders(res, nick);
+  if (!util.isValidValue(name) || !util.isValidValue(code)) {
+    res.status(400).json({ msg: strings.err.branchNameInvalid });
+    return;
   }
+  if (branches[code] === undefined) {
+    util.addBranch(code, name);
+    createBranchFolders(res, code);
+  } else {
+    res.status(400).json({ msg: strings.err.branchAlreadyDefined });
+    return;
+  }
+}
+
+export async function deleteBranch(req, res, jwt) {
+  const code = req.params.code;
+  const branches = await util.getBranchesForUser(jwt);
+  if (!util.isValidValue(code)) {
+    res.status(400).json({ msg: strings.err.branchNameInvalid });
+    return;
+  }
+  if (branches[code] !== undefined) util.deleteBranch(code);
+  else {
+    res.status(400).json({ msg: strings.err.branchAlreadyDefined });
+    return;
+  }
+  deleteBranchFolders(res, code);
 }
 
 /**
