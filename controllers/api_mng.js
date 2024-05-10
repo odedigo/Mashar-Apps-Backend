@@ -15,9 +15,11 @@ import strings from "../public/lang/strings.js";
 import * as util from "../utils/util.js";
 import { Roles } from "../db/models/UserModel.js";
 import { BranchModel } from "../db/models/BranchModel.js";
+import { PlayListModel } from "../db/models/PlayListModel.js";
 import * as aws from "../utils/awsS3.js";
 import * as api_user from "./api_user.js";
 import * as api_game from "./api_game.js";
+import config from "../config/config.js";
 
 /**
  * Create a new branch or delete an existing one
@@ -200,4 +202,28 @@ function createBranches(brch) {
     b.push({ name: element.name, code: element.code });
   });
   return b;
+}
+
+export async function getPlaylist(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  // pagination
+  var page = req.params.page;
+  const numPerPage = config.app.playListPerPage;
+  if (!util.isValidValue(page)) page = 1;
+
+  var playlists = null;
+  if (page == 0) {
+    // no paging, get all
+    playlists = await PlayListModel.find();
+  } else {
+    // send query with pagination
+    playlists = await GameModel.find()
+      .limit(numPerPage)
+      .skip(numPerPage * (page - 1));
+  }
+  res.status(200).json(playlists);
 }

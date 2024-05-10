@@ -36,6 +36,7 @@ const config = {
     gameListPerPage: 20,
     userListPerPage: 20,
     lessonLisrPerPage: 5,
+    playListPerPage: 20,
   },
   s3: {
     root: `https://mashar.s3.eu-north-1.amazonaws.com`, //https://mashar.s3.eu-north-1.amazonaws.com/riddles/aco/cat.png

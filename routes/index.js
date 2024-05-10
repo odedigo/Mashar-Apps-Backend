@@ -355,6 +355,16 @@ router.delete("/api/game/gallery/:name/:branchCode", (req, res) => {
   api_mng.handleGalleryDelete(req, res, jwt.jwt);
 });
 
+router.get("/api/playlist/:page", function (req, res) {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_mng.getPlaylist(req, res, jwt.jwt);
+});
+
 /********* API ********** LESSONS ACTIONS ****************************************/
 router.post("/api/lsn/savelist", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
