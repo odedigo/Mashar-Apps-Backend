@@ -385,6 +385,16 @@ router.post("/api/playlist/add", function (req, res) {
   api_mng.addPlaylist(req, res, jwt.jwt);
 });
 
+router.post("/api/playlist/edit", function (req, res) {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.editPlaylist(req, res, jwt.jwt);
+});
+
 router.delete("/api/playlist/:code", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401);

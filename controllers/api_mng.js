@@ -288,6 +288,43 @@ export async function addPlaylist(req, res, jwt) {
     });
 }
 
+export function editPlaylist(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var list = req.body;
+  if (!util.isValidValue(list)) {
+    return res.status(400).json({ msg: strings.err.invalidData });
+  }
+
+  var filter = {
+    code: list.code,
+  };
+
+  var update = {
+    $set: { topic: list.topic, name: list.name },
+  };
+
+  const options = {
+    upsert: true,
+    returnOriginal: false,
+    new: true,
+  };
+
+  // send query
+  PlayListModel.findOneAndUpdate(filter, update, options)
+    .then((doc) => {
+      if (!doc) {
+        res.status(400).json({ Error: strings.err.actionFailed });
+      } else res.status(200).json({ msg: strings.ok.actionOK });
+    })
+    .catch((err) => {
+      res.status(400).json({ Error: strings.err.actionFailed });
+    });
+}
+
 export async function deletePlaylist(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
