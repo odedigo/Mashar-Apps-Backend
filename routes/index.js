@@ -365,6 +365,36 @@ router.get("/api/playlist/:page", function (req, res) {
   api_mng.getPlaylist(req, res, jwt.jwt);
 });
 
+router.post("/api/playlist/order", function (req, res) {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.reorderPlaylist(req, res, jwt.jwt);
+});
+
+router.post("/api/playlist/add", function (req, res) {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.addPlaylist(req, res, jwt.jwt);
+});
+
+router.delete("/api/playlist/:code", function (req, res) {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.deletePlaylist(req, res, jwt.jwt);
+});
+
 /********* API ********** LESSONS ACTIONS ****************************************/
 router.post("/api/lsn/savelist", (req, res) => {
   const jwt = util.validateAdminUser(req, false);

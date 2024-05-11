@@ -218,12 +218,107 @@ export async function getPlaylist(req, res, jwt) {
   var playlists = null;
   if (page == 0) {
     // no paging, get all
-    playlists = await PlayListModel.find();
+    playlists = await PlayListModel.find().sort({ order: "asc" });
   } else {
     // send query with pagination
-    playlists = await GameModel.find()
+    playlists = await PlayListModel.find()
       .limit(numPerPage)
+      .sort({ order: "asc" })
       .skip(numPerPage * (page - 1));
   }
-  res.status(200).json(playlists);
+  const totalDocs = await PlayListModel.countDocuments();
+  res.status(200).json({ playlists, totalDocs, numPerPage });
+}
+
+export async function reorderPlaylist(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var list = req.body;
+  if (!util.isValidValue(list)) {
+    return res.status(400).json({ msg: strings.err.invalidData });
+  }
+
+  var command = [];
+
+  for (var i = 0; i < list.length; i++) {
+    var cmd = {
+      updateOne: {
+        filter: { code: list[i].code },
+        update: { $set: { order: list[i].order } },
+      },
+    };
+    command.push(cmd);
+  }
+
+  // send query
+  PlayListModel.bulkWrite(command)
+    .then((data) => {
+      res.status(200).json({ msg: strings.ok.actionOK });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export async function addPlaylist(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var list = req.body;
+  if (!util.isValidValue(list)) {
+    return res.status(400).json({ msg: strings.err.invalidData });
+  }
+
+  var model = new PlayListModel(list);
+  model
+    .save()
+    .then((nlist) => {
+      if (nlist) {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      } else res.status(400).json({ msg: strings.err.invalidData });
+    })
+    .catch((error) => {
+      res.status(400).json({ msg: strings.err.invalidData });
+    });
+}
+
+export async function deletePlaylist(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var code = req.params.code;
+
+  var filter = {
+    code,
+  };
+
+  const options = {};
+
+  // send query
+  await PlayListModel.deleteOne(filter, options)
+    .then(async (doc) => {
+      if (!doc) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        // need to reorder
+        var index = 1;
+        var playlists = await PlayListModel.find().sort({ order: "asc" });
+        playlists.forEach((pl) => {
+          pl.order = index++;
+        });
+        req.body = playlists;
+        reorderPlaylist(req, res, jwt);
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
 }

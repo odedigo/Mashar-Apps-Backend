@@ -10,14 +10,15 @@
 //================ IMPORTS =================
 import { Schema, model } from "mongoose";
 
-var PlayListSchema = new Schema(
-  {
-    code: String,
-    topic: String,
-    name: String,
+var PlayListSchema = new Schema({
+  code: {
+    type: String,
+    unique: true,
   },
-  { _id: false }
-);
+  topic: String,
+  name: String,
+  order: Number,
+});
 PlayListSchema.set("collection", "yt_playlists");
 
 // Compile model from schema
