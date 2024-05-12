@@ -284,7 +284,7 @@ export async function addPlaylist(req, res, jwt) {
       } else res.status(400).json({ msg: strings.err.invalidData });
     })
     .catch((error) => {
-      res.status(400).json({ msg: strings.err.invalidData });
+      res.status(400).json({ msg: strings.err.duplicatePlaylist });
     });
 }
 
@@ -304,7 +304,7 @@ export function editPlaylist(req, res, jwt) {
   };
 
   var update = {
-    $set: { topic: list.topic, name: list.name },
+    $set: { topic: list.topic, name: list.name, grade: list.grade },
   };
 
   const options = {

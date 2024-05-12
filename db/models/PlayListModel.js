@@ -18,6 +18,7 @@ var PlayListSchema = new Schema({
   topic: String,
   name: String,
   order: Number,
+  grade: [String],
 });
 PlayListSchema.set("collection", "yt_playlists");
 

@@ -188,13 +188,13 @@ router.get("/api/game/imglist/:branchCode", (req, res) => {
  * get game
  */
 router.get("/api/game/:uid", (req, res) => {
-  const jwt = util.validateAdminUser(req, false);
+  /*const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401);
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
-  }
-  api_game.getGame(req, res, jwt.jwt);
+  }*/
+  api_game.getGame(req, res);
 });
 
 /**

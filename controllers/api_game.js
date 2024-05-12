@@ -144,7 +144,7 @@ export async function getEntireGameList(jwt) {
  * @param {*} jwt
  * @returns
  */
-export function getGame(req, res, jwt) {
+export function getGame(req, res) {
   var uid = req.params.uid;
   if (!util.isValidValue(uid)) return null;
 
@@ -153,9 +153,9 @@ export function getGame(req, res, jwt) {
   };
 
   // only super-admins can get games outside their branch
-  if (jwt.role !== Roles.SUPERADMIN) {
+  /*  if (jwt.role !== Roles.SUPERADMIN) {
     filter["branch"] = jwt.branch;
-  }
+  }*/
 
   // send query
   GameModel.findOne(filter)
