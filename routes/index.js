@@ -74,7 +74,7 @@ router.post("/api/register", (req, res) => {
     res.status(403);
     return;
   }
-  api_user.registerUser(req, res, jwt.jwt);
+  api_user.registerUser(req, res, jwt.jwtUser);
 });
 
 router.post("/api/login", (req, res) => {
