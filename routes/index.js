@@ -406,6 +406,16 @@ router.delete("/api/playlist/:code", function (req, res) {
 });
 
 /********* API ********** LESSONS ACTIONS ****************************************/
+router.get("/api/lsn/groups/:branchCode/:page", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.getLessonGroupList(req, res, jwt.jwt);
+});
+
 router.post("/api/lsn/savelist", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401);
@@ -437,6 +447,36 @@ router.post("/api/lsn/saveform", (req, res) => {
     return;
   }
   api_lesson.saveForm(req, res, jwt.jwt);
+});
+
+router.post("/api/lsn/groups/save/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.saveLessonGroup(req, res, jwt.jwt);
+});
+
+router.post("/api/lsn/groups/add/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.addLessonGroup(req, res, jwt.jwt);
+});
+
+router.delete("/api/lsn/groups/:branch/:gid", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.deleteLessonGroup(req, res, jwt.jwt);
 });
 
 /********************** TOOLS ****************************************/
