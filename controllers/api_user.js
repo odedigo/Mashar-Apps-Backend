@@ -122,14 +122,27 @@ export async function registerUser(req, res, jwt) {
     });
 }
 
-export async function getUserList(page, req, res, jwt, forceBranch = null) {
+export async function getUserList(page, req, res, jwt) {
+  var forceBranch = null;
+  if (util.isValidValue(req.params.branch)) forceBranch = req.params.branch;
+  _getUserList(page, jwt, forceBranch)
+    .then((resp) => {
+      res.status(200).json(resp);
+    })
+    .catch((err) => {
+      res.status(400);
+    });
+}
+
+export async function _getUserList(page, jwt, forceBranch = null) {
+  var branch = jwt.branch;
   const numPerPage = config.app.userListPerPage;
   if (!util.isValidValue(page)) page = 1;
   var filter = {};
-  if (jwt.role !== Roles.SUPERADMIN) filter["branch"] = jwt.branch;
-  else if (util.isValidValue(forceBranch)) {
-    filter["branch"] = forceBranch;
+  if (jwt.role === Roles.SUPERADMIN && util.isValidValue(forceBranch)) {
+    branch = forceBranch;
   }
+  filter["branch"] = branch;
   var users = await UserModel.find(filter)
     .limit(numPerPage)
     .skip(numPerPage * (page - 1))
@@ -137,7 +150,7 @@ export async function getUserList(page, req, res, jwt, forceBranch = null) {
   var numUsers = await UserModel.countDocuments(filter);
   if (users == null) users = [];
   users = createUserList(users);
-  res.status(200).json({ users, totalDocs: numUsers, numPerPage });
+  return { users, totalDocs: numUsers, numPerPage };
 }
 
 export async function countUsers(branch) {

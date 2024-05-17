@@ -94,7 +94,7 @@ router.post("/api/logout", (req, res) => {
 /**
  * User list
  */
-router.get("/api/users/:page", (req, res) => {
+router.get("/api/users/:page/:branch?", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401);
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
@@ -161,7 +161,7 @@ router.get("/api/vector/:uid/:team/:index/:vectorSize/:vectorAngle", (req, res) 
 /**
  * get game list
  */
-router.post("/api/game/list/:page", (req, res) => {
+router.post("/api/game/list/:page/:branch?", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401);
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
@@ -477,6 +477,16 @@ router.delete("/api/lsn/groups/:branch/:gid", (req, res) => {
     return;
   }
   api_lesson.deleteLessonGroup(req, res, jwt.jwt);
+});
+
+router.get("/api/lsn/avail/:branch/:page", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401);
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.getLessonsAvailability(req, res, jwt.jwt);
 });
 
 /********************** TOOLS ****************************************/

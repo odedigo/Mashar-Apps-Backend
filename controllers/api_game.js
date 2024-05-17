@@ -88,11 +88,9 @@ export async function getGameList(req, res, jwt) {
 
   // pagination
   var page = req.params.page;
+  var branch = req.params.branch;
   const numPerPage = config.app.gameListPerPage;
   if (!util.isValidValue(page)) page = 1;
-
-  var { branch, gameName } = req.body;
-  var filter = {};
 
   // only super-admins can get data on games not in their branch
   if (jwt.role === Roles.TEACHER || jwt.role === Roles.ADMIN) {
@@ -100,14 +98,10 @@ export async function getGameList(req, res, jwt) {
       res.status(400).json({ msg: strings.err.invalidAction });
       return;
     }
-    // force their branch if not specified
-    if (!util.isValidValue(branch)) filter["branch"] = jwt.branch;
-  } else {
-    // super admins can search for other branches
-    if (util.isValidValue(branch)) filter["branch"] = util.branchToCode(branch);
   }
+  if (!util.isValidValue(branch)) filter["branch"] = jwt.branch;
 
-  if (util.isValidValue(gameName)) filter["gameName"] = gameName;
+  var filter = { branch };
 
   // send query with pagination
   var games = await GameModel.find(filter)
