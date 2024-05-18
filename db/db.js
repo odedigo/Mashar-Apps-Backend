@@ -35,10 +35,10 @@ export function connectDB(callback) {
   connect(url, connectionParams)
     .then((aa) => {
       console.log("Connected to the database ");
-      callback(true);
+      callback(true, url, "");
     })
     .catch((err) => {
       console.error(`Error connecting to the database. ${err}`);
-      callback(false);
+      callback(false, url, err);
     });
 }

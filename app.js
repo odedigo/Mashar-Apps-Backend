@@ -46,11 +46,11 @@ app.use("/", routing); // routing module with all routes, which in turn points t
 app.set("db_connected", false);
 
 //Express-Server
-connectDB(function (status) {
+connectDB(function (status, url, err) {
   // Start server (listen)
-  console.log(`DB connection ${status ? "success" : "failed"}`);
+  console.log(`DB connection ${status ? "success" : "failed"}`, url);
   if (!status) {
-    console.log("Aborting...");
+    console.log("Aborting...", url, err);
     return;
   }
   app.listen(app.get("port"), () => {
