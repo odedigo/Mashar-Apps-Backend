@@ -36,11 +36,12 @@ if (process.env.ENVIROMENT != "local") {
 app.set("port", process.env.PORT || 3000);
 app.use("/", express.static("./public"));
 //Middlewares
-var origin = process.env.CORS_ORIGIN || "http://localhost:4200";
+var origin = process.env.CORS_ORIGIN || "http://localhost";
 var corsOptions = {
-  origin: true,
+  origin: [process.env.CORS_ORIGIN, "http://localhost"],
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
+app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
 app.use(express.json());
@@ -68,7 +69,7 @@ connectDB(function (status) {
     return;
   }
   app.listen(app.get("port"), () => {
-    console.log(`Server running on port ${app.get("port")}`);
+    console.log(`Server running on port ${app.get("port")}, using ${origin} as origin`);
   });
   app.set("db_connected", status); // mark connected or not
   loadBranchesFromDB();
