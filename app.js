@@ -38,10 +38,10 @@ app.use("/", express.static("./public"));
 //Middlewares
 var origin = process.env.CORS_ORIGIN || "http://localhost:4200";
 var corsOptions = {
-  origin: origin,
+  origin: false,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
-app.options("*", cors());
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
