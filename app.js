@@ -16,6 +16,7 @@ import express from "express";
 import { connectDB } from "./db/db.js";
 import routing from "./routes/index.js";
 import __dirname from "fs";
+import cors from "cors";
 
 //Additional
 import { HTTPS } from "express-sslify";
@@ -35,8 +36,13 @@ if (process.env.ENVIROMENT != "local") {
 app.set("port", process.env.PORT || 3000);
 app.use("/", express.static("./public"));
 //Middlewares
-
 var origin = process.env.CORS_ORIGIN || "http://localhost:4200";
+var corsOptions = {
+  origin: origin,
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.options("*", cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
