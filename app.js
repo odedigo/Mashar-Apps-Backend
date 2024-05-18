@@ -38,7 +38,7 @@ app.use("/", express.static("./public"));
 //Middlewares
 var origin = process.env.CORS_ORIGIN || "http://localhost:4200";
 var corsOptions = {
-  origin: false,
+  origin,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 app.options("*", cors(corsOptions));
