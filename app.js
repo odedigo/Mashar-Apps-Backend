@@ -38,6 +38,10 @@ app.use("/", express.static("./public"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(function (req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+});
 
 //Routing
 app.use("/", routing); // routing module with all routes, which in turn points to controllers
@@ -45,7 +49,6 @@ app.use("/", routing); // routing module with all routes, which in turn points t
 // DB Status
 app.set("db_connected", false);
 
-console.log(process.env);
 //Express-Server
 connectDB(function (status) {
   // Start server (listen)
