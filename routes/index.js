@@ -69,7 +69,7 @@ const storageMapS3 = multer({
 router.post("/api/register", (req, res) => {
   //Err Site
   const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -83,7 +83,7 @@ router.post("/api/login", (req, res) => {
 
 router.post("/api/logout", (req, res) => {
   /*if (!util.validateAdminUser(req, false).valid) {
-    res.status(401);
+    res.status(401).send()
     return;
   }*/
   api_user.logoutUser(req, res);
@@ -96,7 +96,7 @@ router.post("/api/logout", (req, res) => {
  */
 router.get("/api/users/:page/:branch?", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -106,7 +106,7 @@ router.get("/api/users/:page/:branch?", (req, res) => {
 
 router.delete("/api/user/:username", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
     res.status(403);
     return;
@@ -116,7 +116,7 @@ router.delete("/api/user/:username", (req, res) => {
 
 router.post("/api/user/chgpass", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -126,7 +126,7 @@ router.post("/api/user/chgpass", (req, res) => {
 
 router.post("/api/user/role", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -141,7 +141,7 @@ router.post("/api/user/role", (req, res) => {
 
 router.post("/api/user/save", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -163,7 +163,7 @@ router.get("/api/vector/:uid/:team/:index/:vectorSize/:vectorAngle", (req, res) 
  */
 router.post("/api/game/list/:page/:branch?", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -176,7 +176,7 @@ router.post("/api/game/list/:page/:branch?", (req, res) => {
  */
 router.get("/api/game/imglist/:branchCode", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -189,7 +189,7 @@ router.get("/api/game/imglist/:branchCode", (req, res) => {
  */
 router.get("/api/game/:uid", (req, res) => {
   /*const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send()
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -202,7 +202,7 @@ router.get("/api/game/:uid", (req, res) => {
  */
 router.get("/api/game/status/:uid", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -215,7 +215,7 @@ router.get("/api/game/status/:uid", (req, res) => {
  */
 router.get("/api/game/start/:gameCode/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -228,7 +228,7 @@ router.get("/api/game/start/:gameCode/:branch", (req, res) => {
  */
 router.get("/api/game/stop/:gameCode/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -241,7 +241,7 @@ router.get("/api/game/stop/:gameCode/:branch", (req, res) => {
  */
 router.post("/api/game/create", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -254,7 +254,7 @@ router.post("/api/game/create", (req, res) => {
  */
 router.delete("/api/game/:uid/:branch?", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -267,7 +267,7 @@ router.delete("/api/game/:uid/:branch?", (req, res) => {
  */
 router.post("/api/game/clone", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -280,7 +280,7 @@ router.post("/api/game/clone", (req, res) => {
  */
 router.put("/api/game/:uid", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -293,7 +293,7 @@ router.put("/api/game/:uid", (req, res) => {
  */
 router.post("/api/game/upmap/:uid/:branchCode/:teamColor", storageMapS3.single("file"), (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -305,7 +305,7 @@ router.post("/api/game/upmap/:uid/:branchCode/:teamColor", storageMapS3.single("
 
 router.post("/api/branch/list", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
     res.status(403);
     return;
@@ -315,7 +315,7 @@ router.post("/api/branch/list", (req, res) => {
 
 router.post("/api/mng/branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
     res.status(403);
     return;
@@ -325,7 +325,7 @@ router.post("/api/mng/branch", (req, res) => {
 
 router.delete("/api/mng/branch/:code", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
     res.status(403);
     return;
@@ -335,7 +335,7 @@ router.delete("/api/mng/branch/:code", (req, res) => {
 
 router.put("/api/game/gallery/:branchCode", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -347,7 +347,7 @@ router.put("/api/game/gallery/:branchCode", function (req, res) {
 
 router.delete("/api/game/gallery/:name/:branchCode", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -357,7 +357,7 @@ router.delete("/api/game/gallery/:name/:branchCode", (req, res) => {
 
 router.get("/api/playlist/:page", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
@@ -367,7 +367,7 @@ router.get("/api/playlist/:page", function (req, res) {
 
 router.post("/api/playlist/order", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -377,7 +377,7 @@ router.post("/api/playlist/order", function (req, res) {
 
 router.post("/api/playlist/add", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -387,7 +387,7 @@ router.post("/api/playlist/add", function (req, res) {
 
 router.post("/api/playlist/edit", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -397,7 +397,7 @@ router.post("/api/playlist/edit", function (req, res) {
 
 router.delete("/api/playlist/:code", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -408,7 +408,7 @@ router.delete("/api/playlist/:code", function (req, res) {
 /********* API ********** LESSONS ACTIONS ****************************************/
 router.get("/api/lsn/groups/:branchCode/:page", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -418,7 +418,7 @@ router.get("/api/lsn/groups/:branchCode/:page", (req, res) => {
 
 router.post("/api/lsn/savelist", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -428,7 +428,7 @@ router.post("/api/lsn/savelist", (req, res) => {
 
 router.post("/api/lsn/savegroups", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -441,7 +441,7 @@ router.post("/api/lsn/savegroups", (req, res) => {
  */
 router.post("/api/lsn/saveform", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -451,7 +451,7 @@ router.post("/api/lsn/saveform", (req, res) => {
 
 router.post("/api/lsn/groups/save/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -461,7 +461,7 @@ router.post("/api/lsn/groups/save/:branch", (req, res) => {
 
 router.post("/api/lsn/groups/add/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -471,7 +471,7 @@ router.post("/api/lsn/groups/add/:branch", (req, res) => {
 
 router.delete("/api/lsn/groups/:branch/:gid", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
@@ -481,7 +481,7 @@ router.delete("/api/lsn/groups/:branch/:gid", (req, res) => {
 
 router.get("/api/lsn/avail/:branch/:page", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401);
+  if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;

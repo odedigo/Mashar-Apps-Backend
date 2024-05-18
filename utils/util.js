@@ -77,6 +77,7 @@ export function validateToken(headers) {
     const decoded = jwt.verify(token, process.env.JWTSECRET);
     return decoded;
   } catch (error) {
+    console.log("JWT Error", error);
     return null;
   }
 }

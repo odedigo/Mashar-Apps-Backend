@@ -30,7 +30,7 @@ config({ path: `${rootPath}/config.env` });
 const app = express();
 app.set("rootPath", rootPath);
 if (process.env.ENVIROMENT != "local") {
-  app.use(HTTPS({ trustProtoHeader: true }));
+  //  app.use(HTTPS({ trustProtoHeader: true }));
 }
 app.set("port", process.env.PORT || 3000);
 app.use("/", express.static("./public"));
