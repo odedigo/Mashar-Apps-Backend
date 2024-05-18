@@ -36,9 +36,9 @@ if (process.env.ENVIROMENT != "local") {
 app.set("port", process.env.PORT || 3000);
 app.use("/", express.static("./public"));
 //Middlewares
-var origin = process.env.CORS_ORIGIN || "http://localhost";
+var origin = [process.env.CORS_ORIGIN, "http://localhost"];
 var corsOptions = {
-  origin: [process.env.CORS_ORIGIN, "http://localhost"],
+  origin: origin,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 app.use(cors(corsOptions));
@@ -46,13 +46,6 @@ app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-/*app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-  next();
-});*/
 
 //Routing
 app.use("/", routing); // routing module with all routes, which in turn points to controllers
@@ -69,7 +62,7 @@ connectDB(function (status) {
     return;
   }
   app.listen(app.get("port"), () => {
-    console.log(`Server running on port ${app.get("port")}, using ${origin} as origin`);
+    console.log(`Server running on port ${app.get("port")}, using "${origin}" as origin`);
   });
   app.set("db_connected", status); // mark connected or not
   loadBranchesFromDB();
