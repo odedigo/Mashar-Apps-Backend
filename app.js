@@ -47,11 +47,11 @@ app.set("db_connected", false);
 
 console.log(process.env);
 //Express-Server
-connectDB(function (status, url, err) {
+connectDB(function (status) {
   // Start server (listen)
-  console.log(`DB connection ${status ? "success" : "failed"}`, url);
+  console.log(`DB connection ${status ? "success" : "failed"}`);
   if (!status) {
-    console.log("Aborting...", url, err);
+    console.log("Aborting...");
     return;
   }
   app.listen(app.get("port"), () => {
