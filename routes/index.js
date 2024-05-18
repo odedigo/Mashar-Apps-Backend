@@ -486,7 +486,7 @@ router.get("/api/lsn/avail/:branch/:page", (req, res) => {
     res.status(403);
     return;
   }
-  api_lesson.getLessonsAvailability(req, res, jwt.jwt);
+  //api_lesson.getLessonsAvailability(req, res, jwt.jwt);
 });
 
 /********************** TOOLS ****************************************/

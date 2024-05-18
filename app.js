@@ -45,6 +45,7 @@ app.use("/", routing); // routing module with all routes, which in turn points t
 // DB Status
 app.set("db_connected", false);
 
+console.log(process.env);
 //Express-Server
 connectDB(function (status, url, err) {
   // Start server (listen)
