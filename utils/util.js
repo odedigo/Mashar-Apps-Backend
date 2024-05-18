@@ -105,7 +105,6 @@ export function validateAdminUser(req, validatePage = false) {
   if (!jwtUser) {
     return { valid: false, jwt: null };
   }
-  if (validatePage) return { valid: validateAdminPage(req), jwtUser };
   return { valid: true, jwt: jwtUser };
 }
 
