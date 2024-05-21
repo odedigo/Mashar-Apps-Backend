@@ -47,16 +47,16 @@ export async function loginUser(req, res) {
             const token = await util.getOneTimeToken(user);
             res.status(200).json({ token });
           } else {
-            res.status(400).json({ msg: strings.err.invalidUserPass, redirect: "/login", name: user.name, branch: user.branch });
+            res.status(401).json({ msg: strings.err.invalidUserPass, redirect: "/login", name: user.name, branch: user.branch });
           }
         });
       } else {
-        res.status(400).json({ msg: strings.err.invalidUserPass, redirect: "/login" });
+        res.status(401).json({ msg: strings.err.invalidUserPass, redirect: "/login" });
       }
     })
     .catch((err) => {
       console.log(err);
-      res.status(500).json({ success: false, msg: strings.err.userNotFound, redirect: "/login" });
+      res.status(401).json({ success: false, msg: strings.err.userNotFound, redirect: "/login" });
     });
 }
 
