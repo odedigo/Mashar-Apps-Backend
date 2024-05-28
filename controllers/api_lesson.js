@@ -17,6 +17,7 @@ import { LsnFormModel } from "../db/models/LsnFormModel.js";
 import strings from "../public/lang/strings.js";
 import config from "../config/config.js";
 import * as util from "../utils/util.js";
+import * as api_user from "../controllers/api_user.js";
 import { model } from "mongoose";
 import { response } from "express";
 
@@ -257,6 +258,23 @@ export async function getLessonGroupList(req, res, jwt) {
   res.status(200).json({ groups: groups, total, numPerPage, branch: filter["branch"] });
 }
 
+async function _getLessonGroupList(branchCode, page, jwt) {
+  if (!util.isValidValue(page)) page = 1;
+
+  var numPerPage = config.app.userListPerPage;
+
+  var filter = { branch: branchCode };
+  // send query with pagination
+  var lsnGroups = await LsnGroupModel.find(filter)
+    /*.limit(numPerPage)
+    .skip(numPerPage * (page - 1))*/
+    .sort({ branch: "desc" });
+  //var total = await LsnGroupModel.countDocuments(filter);
+  var groups = createLsnGroupArray(lsnGroups);
+  var total = groups.length;
+  return { groups: groups, totalGroups: total, numGroupsPerPage: numPerPage };
+}
+
 export function createLsnGroupArray(groups) {
   var list = [];
   if (Array.isArray(groups)) {
@@ -271,6 +289,35 @@ export function createLsnGroupArray(groups) {
     });
   }
   return list;
+}
+
+export async function getLessonsAvailability(req, res, jwt) {
+  var branchCode = req.params.branch;
+  var teacher = req.params.teacher;
+  // SUPER-ADMIN can see all images.
+  // Others can view only from their branch so we redirect
+  // them to their section
+  if (jwt.role !== Roles.SUPERADMIN && branchCode != jwt.branch) {
+    branchCode = jwt.branch;
+  }
+
+  const { groups, totalGroups, numGroupsPerPage } = await _getLessonGroupList(branchCode, 1, jwt);
+  res.status(200).json({ users: ausers, groups, numPerPage: config.app.userListPerPage, totalDocs: 1 });
+}
+
+export async function getLessonsAvailabilitySingle(req, res, jwt) {
+  var branchCode = req.params.branch;
+  var teacher = req.params.teacher;
+  // SUPER-ADMIN can see all images.
+  // Others can view only from their branch so we redirect
+  // them to their section
+  if (jwt.role !== Roles.SUPERADMIN && branchCode != jwt.branch) {
+    branchCode = jwt.branch;
+  }
+
+  const user = await api_user._getUser(branchCode, teacher);
+  const { groups, totalGroups, numGroupsPerPage } = await _getLessonGroupList(branchCode, 1, jwt);
+  res.status(200).json({ groups, user });
 }
 
 export async function getFormList(req, res, jwt, branchCode) {

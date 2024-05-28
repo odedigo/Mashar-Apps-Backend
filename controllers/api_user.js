@@ -134,14 +134,10 @@ export async function getUserList(page, req, res, jwt) {
     });
 }
 
-export async function _getUserList(page, jwt, forceBranch = null) {
-  var branch = jwt.branch;
+export async function _getUserList(page, jwt, branch) {
   const numPerPage = config.app.userListPerPage;
   if (!util.isValidValue(page)) page = 1;
   var filter = {};
-  if (jwt.role === Roles.SUPERADMIN && util.isValidValue(forceBranch)) {
-    branch = forceBranch;
-  }
   filter["branch"] = branch;
   var users = await UserModel.find(filter)
     .limit(numPerPage)
@@ -151,6 +147,13 @@ export async function _getUserList(page, jwt, forceBranch = null) {
   if (users == null) users = [];
   users = createUserList(users);
   return { users, totalDocs: numUsers, numPerPage };
+}
+
+export async function _getUser(branch, username) {
+  var filter = { branch, username };
+  var users = await UserModel.find(filter);
+  var user = createUserList(users);
+  return user[0];
 }
 
 export async function countUsers(branch) {

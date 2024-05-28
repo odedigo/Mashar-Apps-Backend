@@ -479,14 +479,14 @@ router.delete("/api/lsn/groups/:branch/:gid", (req, res) => {
   api_lesson.deleteLessonGroup(req, res, jwt.jwt);
 });
 
-router.get("/api/lsn/avail/:branch/:page", (req, res) => {
+router.get("/api/lsn/avail/:branch/:teacher/:page", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
   if (!validateRoleAllowed(req, [Roles.ADMIN])) {
     res.status(403);
     return;
   }
-  //api_lesson.getLessonsAvailability(req, res, jwt.jwt);
+  api_lesson.getLessonsAvailabilitySingle(req, res, jwt.jwt);
 });
 
 /********************** TOOLS ****************************************/
