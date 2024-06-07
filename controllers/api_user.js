@@ -170,6 +170,38 @@ export async function countUsers(branch) {
   return branchUsers;
 }
 
+export async function setLessonsAvailabilitySingle(req, res, jwt) {
+  var branchCode = req.params.branch;
+  var user = req.body;
+
+  if (!util.isValidValue(user.username)) {
+    res.status(400).json({ msg: strings.err.invalidData });
+    return;
+  }
+
+  var filter = {
+    username: user.username.trim().toLowerCase(),
+  };
+
+  const options = {
+    upsert: true,
+    returnOriginal: false,
+  };
+
+  UserModel.findOneAndUpdate(filter, { $set: { lessons: user.lessons } }, options)
+    .then((userRsp) => {
+      if (!userRsp) {
+        res.status(400).json({ msg: strings.err.failedUpdatingUser });
+        return;
+      }
+      res.status(200).json({ msg: strings.ok.userUpdateOK });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ msg: strings.err.userUpdateErr });
+    });
+}
+
 function createUser(user) {
   return { name: user.name, branchName: util.codeToBranch(user.branch), branch: user.branch, email: user.email, username: user.username.toLowerCase(), role: user.role, created: util.getDateIL(user.created) };
 }
@@ -185,7 +217,7 @@ export function createUserList(users) {
       grp.group = group.group;
       grp.timing = [];
       group.timing.forEach((ls) => {
-        grp.timing.push({ weekday: ls.weekday, time: ls.time, duration: ls.duration });
+        grp.timing.push({ weekday: ls.weekday, time: ls.time, duration: ls.duration, active: ls.active });
       });
       lsns.push(grp);
     });
@@ -291,6 +323,7 @@ export function changeRole(req, res) {
 export function saveUser(req, res, jwt) {
   //var { username, role, email } = req.body;
   var user = req.body.user;
+  if (!util.isValidValue(user)) user = req.body;
 
   if (!util.isValidValue(user.username) || !util.isValidValue(user.role) || !util.isValidValue(user.email)) {
     res.status(400).json({ msg: strings.err.invalidData });

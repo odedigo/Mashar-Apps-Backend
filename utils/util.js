@@ -20,7 +20,7 @@ import * as aws from "../utils/awsS3.js";
  * @returns
  */
 export function getUniqueGameUID() {
-  return Math.floor(1000000 + Math.random() * 9000000).toString(16);
+  return Math.floor(100000000000 + Math.random() * 900000000000).toString(16);
 }
 
 /*************** User Authentication *******************/

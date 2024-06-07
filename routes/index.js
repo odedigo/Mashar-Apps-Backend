@@ -439,16 +439,6 @@ router.post("/api/lsn/savegroups", (req, res) => {
 /**
  * save form
  */
-router.post("/api/lsn/saveform", (req, res) => {
-  const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
-    res.status(403);
-    return;
-  }
-  api_lesson.saveForm(req, res, jwt.jwt);
-});
-
 router.post("/api/lsn/groups/save/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -487,6 +477,67 @@ router.get("/api/lsn/avail/:branch/:teacher/:page", (req, res) => {
     return;
   }
   api_lesson.getLessonsAvailabilitySingle(req, res, jwt.jwt);
+});
+
+router.put("/api/lsn/avail", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_user.setLessonsAvailabilitySingle(req, res, jwt.jwt);
+});
+
+/********************** FORMS ****************************************/
+router.get("/api/lsn/form/:branch/:id?", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.getForms(req, res, jwt.jwt);
+});
+
+router.get("/api/lsn/form/clone/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.cloneForm(req, res, jwt.jwt);
+});
+
+router.delete("/api/lsn/form/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.deleteForm(req, res, jwt.jwt);
+});
+
+router.put("/api/lsn/form/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.addForm(req, res, jwt.jwt);
+});
+
+router.put("/api/lsn/form/save/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.saveForm(req, res, jwt.jwt);
 });
 
 /********************** TOOLS ****************************************/

@@ -20,6 +20,7 @@ import * as util from "../utils/util.js";
 import * as api_user from "../controllers/api_user.js";
 import { model } from "mongoose";
 import { response } from "express";
+import { Types } from "mongoose";
 
 export function saveLessonGroups(req, res, jwt) {
   // check if DB properly connected
@@ -320,19 +321,6 @@ export async function getLessonsAvailabilitySingle(req, res, jwt) {
   res.status(200).json({ groups, user });
 }
 
-export async function getFormList(req, res, jwt, branchCode) {
-  // check if DB properly connected
-  if (!req.app.get("db_connected")) {
-    return res.status(500);
-  }
-
-  var filter = { branch: branchCode };
-  // send query with pagination
-  var forms = await LsnFormModel.find(filter).sort({ branch: "desc" });
-  var group = await getGroupByBranch(branchCode);
-  return { forms, group, branch: filter["branch"] };
-}
-
 export async function getGroupByBranch(branch, gid) {
   var group = await LsnGroupModel.findOne({ branch });
   var arr = createLsnGroupArray(group);
@@ -376,61 +364,181 @@ export async function getForm(uid) {
   return form;
 }
 
+/////////////// FORMS
+
+export async function getForms(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var filter = { branch: req.params.branch };
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  if (util.isValidValue(req.params.id)) filter["uid"] = req.params.id;
+
+  // send query with pagination
+  var forms = await LsnFormModel.find(filter);
+  var groups = await getGroupByBranch(filter.branch);
+  res.status(200).json({ forms, groups });
+}
+
+export async function cloneForm(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var filter = {
+    branch: req.params.branch,
+    uid: req.params.id,
+  };
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  // send query
+  LsnFormModel.find(filter)
+    .then((form) => {
+      if (!form || form.length != 1) {
+        res.status(400).json({ msg: strings.err.invalidData });
+        return;
+      }
+      form[0].uid = util.getUniqueGameUID();
+      form[0].active = false;
+      form[0]._id = new Types.ObjectId();
+      form[0].date = util.getCurrentDateTime();
+      form[0].name += " - עותק";
+      form[0].isNew = true;
+      delete form[0]._id;
+      var theform = new LsnFormModel(form[0]);
+      theform
+        .save()
+        .then((nform) => {
+          if (nform) {
+            res.status(200).json(nform);
+          } else res.status(400).json({ msg: strings.err.actionFailed });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({ msg: strings.err.actionFailed });
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export async function deleteForm(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var filter = {
+    uid: req.params.id,
+    branch: req.params.branch,
+  };
+
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  const options = {};
+
+  // send query
+  await LsnFormModel.deleteOne(filter, options)
+    .then((doc) => {
+      if (!doc) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export async function addForm(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var form = req.body;
+  var branch = req.params.branch;
+
+  if (jwt.role !== Roles.SUPERADMIN || !util.isValidValue(branch)) branch = jwt.branch;
+
+  var theForm = _createNewForm(branch, form, true);
+  var model = new LsnFormModel(theForm);
+  model
+    .save()
+    .then((nForm) => {
+      if (nForm) {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      } else res.status(400).json({ msg: strings.err.actionFailed });
+    })
+    .catch((error) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
 export function saveForm(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
     return res.status(500);
   }
 
-  var { uid, form, name, group, active, title, branch } = req.body;
-  active = active == "true";
-  if (uid === "-1") {
-    // new form
-    uid = util.getUniqueGameUID();
-  }
-
-  if (form.length == 0) {
-    return res.status(400).json({ msg: strings.err.formFillAll });
-  }
-
-  if (jwt.role !== Roles.SUPERADMIN) {
-    if (branch !== jwt.branch) {
-      return res.status(400).json({ msg: strings.err.formFillAll });
-    }
-  }
-
   var filter = {
-    uid,
+    uid: req.params.id,
+    branch: req.params.branch,
   };
 
-  var date = new Date();
-
-  var update = {
-    $set: { qa: form, name, group, active, title, branch, date },
-  };
-
-  const options = {
-    upsert: true,
-    returnOriginal: false,
-    new: true,
-  };
-
-  // only super-admins can edit games outside their branch
+  // only super-admins can save games outside their branch
   if (jwt.role !== Roles.SUPERADMIN) {
     filter["branch"] = jwt.branch;
   }
 
   // send query
-  LsnFormModel.findOneAndUpdate(filter, update, options)
-    .then((form) => {
-      if (!form) {
-        res.status(400).json({ msg: strings.err.formNotFound });
+  LsnFormModel.findOne(filter)
+    .then((theForm) => {
+      if (!theForm) {
+        res.status(400).json({ msg: strings.err.invalidData });
         return;
       }
-      res.status(200).json({ msg: strings.ok.actionOK });
+      var saveData = _createNewForm(filter.branch, req.body, false);
+      var model = new LsnFormModel(saveData); // create a Model
+      model.isNew = false;
+      delete model._id;
+      model._id = theForm.id;
+      model
+        .save() // save it
+        .then((nForm) => {
+          if (nForm) res.status(200).json({ msg: strings.ok.actionOK });
+          else res.status(400).json({ msg: game.err.actionFailed });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({ msg: strings.err.actionFailed });
+        });
     })
-    .catch((error) => {
-      console.log(error);
-      res.status(400).json({ msg: strings.err.formNotFound });
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ msg: strings.err.actionFailed });
     });
+}
+
+function _createNewForm(branch, form, isNew) {
+  var form = {
+    branch,
+    group: form.group,
+    active: form.active,
+    date: util.getCurrentDateTime(),
+    name: form.name,
+    title: form.title !== "" ? form.title : "כותרת",
+    subtitle: form.subtitle !== "" ? form.subtitle : "תת כותרת",
+    qa: form.qa,
+    desc: form.desc,
+  };
+  if (isNew) form["uid"] = util.getUniqueGameUID();
+  return form;
 }
