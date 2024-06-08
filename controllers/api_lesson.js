@@ -482,6 +482,51 @@ export async function addForm(req, res, jwt) {
     });
 }
 
+export function updateFormDetails(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var filter = {
+    uid: req.params.id,
+    branch: req.params.branch,
+  };
+
+  // only super-admins can save games outside their branch
+  if (jwt.role !== Roles.SUPERADMIN) {
+    filter["branch"] = jwt.branch;
+  }
+
+  // send query
+  LsnFormModel.findOne(filter)
+    .then((theForm) => {
+      if (!theForm) {
+        res.status(400).json({ msg: strings.err.invalidData });
+        return;
+      }
+      var saveData = _updateFormDetails(filter.branch, req.body, theForm);
+      var model = new LsnFormModel(saveData); // create a Model
+      model.isNew = false;
+      delete model._id;
+      model._id = theForm.id;
+      model
+        .save() // save it
+        .then((nForm) => {
+          if (nForm) res.status(200).json({ msg: strings.ok.actionOK });
+          else res.status(400).json({ msg: game.err.actionFailed });
+        })
+        .catch((error) => {
+          console.log(error);
+          res.status(400).json({ msg: strings.err.actionFailed });
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
 export function saveForm(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
@@ -528,6 +573,9 @@ export function saveForm(req, res, jwt) {
 }
 
 function _createNewForm(branch, form, isNew) {
+  form.qa.forEach((item) => {
+    if (item.qid === "") item.qid = util.getUniqueGameUID();
+  });
   var form = {
     branch,
     group: form.group,
@@ -541,4 +589,11 @@ function _createNewForm(branch, form, isNew) {
   };
   if (isNew) form["uid"] = util.getUniqueGameUID();
   return form;
+}
+
+function _updateFormDetails(branch, form, existingForm) {
+  existingForm.group = form.group;
+  existingForm.active = form.active;
+  (existingForm.date = util.getCurrentDateTime()), (existingForm.name = form.name);
+  return existingForm;
 }

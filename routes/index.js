@@ -520,6 +520,7 @@ router.delete("/api/lsn/form/:branch/:id", (req, res) => {
   api_lesson.deleteForm(req, res, jwt.jwt);
 });
 
+// add a new form
 router.put("/api/lsn/form/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -528,6 +529,17 @@ router.put("/api/lsn/form/:branch", (req, res) => {
     return;
   }
   api_lesson.addForm(req, res, jwt.jwt);
+});
+
+// update details of an existing form
+router.post("/api/lsn/form/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.updateFormDetails(req, res, jwt.jwt);
 });
 
 router.put("/api/lsn/form/save/:branch/:id", (req, res) => {
