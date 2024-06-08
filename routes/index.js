@@ -104,6 +104,13 @@ router.get("/api/users/:page/:branch?", (req, res) => {
   api_user.getUserList(req.params.page, req, res, jwt.jwt);
 });
 
+/**
+ * User list by lesson group
+ */
+router.get("/api/users/bygroup/:branch/:group", (req, res) => {
+  api_user.getUserListByGroup(req, res);
+});
+
 router.delete("/api/user/:username", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid) return res.status(401).send();
@@ -491,13 +498,7 @@ router.put("/api/lsn/avail", (req, res) => {
 
 /********************** FORMS ****************************************/
 router.get("/api/lsn/form/:branch/:id?", (req, res) => {
-  const jwt = util.validateAdminUser(req, false);
-  if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
-    res.status(403);
-    return;
-  }
-  api_lesson.getForms(req, res, jwt.jwt);
+  api_lesson.getForms(req, res);
 });
 
 router.get("/api/lsn/form/clone/:branch/:id", (req, res) => {

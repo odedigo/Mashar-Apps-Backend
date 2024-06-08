@@ -366,14 +366,13 @@ export async function getForm(uid) {
 
 /////////////// FORMS
 
-export async function getForms(req, res, jwt) {
+export async function getForms(req, res) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
     return res.status(500);
   }
 
   var filter = { branch: req.params.branch };
-  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
 
   if (util.isValidValue(req.params.id)) filter["uid"] = req.params.id;
 

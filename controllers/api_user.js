@@ -134,6 +134,21 @@ export async function getUserList(page, req, res, jwt) {
     });
 }
 
+export function getUserListByGroup(req, res) {
+  var filter = {
+    branch: req.params.branch,
+    "lessons.group": req.params.group,
+  };
+  UserModel.find(filter)
+    .then((rusers) => {
+      var users = createUserList(rusers);
+      res.status(200).json(users);
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
 export async function _getUserList(page, jwt, branch) {
   const numPerPage = config.app.userListPerPage;
   if (!util.isValidValue(page)) page = 1;
