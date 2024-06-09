@@ -518,6 +518,10 @@ router.get("/api/lsn/form/:branch/:id?", (req, res) => {
   api_lesson.getForms(req, res);
 });
 
+router.get("/api/lsn/reg/:branch/:id", (req, res) => {
+  api_lesson.registerLesson(req, res);
+});
+
 router.get("/api/lsn/form/clone/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();

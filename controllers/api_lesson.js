@@ -407,6 +407,9 @@ export async function cloneForm(req, res, jwt) {
       form[0].date = util.getCurrentDateTime();
       form[0].name += " - עותק";
       form[0].isNew = true;
+      form[0].qa.forEach((q) => {
+        q.qid = util.getUniqueGameUID();
+      });
       delete form[0]._id;
       var theform = new LsnFormModel(form[0]);
       theform
@@ -570,6 +573,8 @@ export function saveForm(req, res, jwt) {
       res.status(400).json({ msg: strings.err.actionFailed });
     });
 }
+
+function registerLesson(req, res) {}
 
 function _createNewForm(branch, form, isNew) {
   form.qa.forEach((item) => {
