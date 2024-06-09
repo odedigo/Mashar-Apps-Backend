@@ -107,8 +107,25 @@ router.get("/api/users/:page/:branch?", (req, res) => {
 /**
  * User list by lesson group
  */
-router.get("/api/users/bygroup/:branch/:group", (req, res) => {
+router.get("/api/usersbygroup/:branch/:group", (req, res) => {
   api_user.getUserListByGroup(req, res);
+});
+
+router.delete("/api/user/:username", (req, res) => {
+  const jwt = util.validateAdminUser(req, true);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_user.deleteUser(req, res, jwt.jwt);
+});
+
+/**
+ * User list by teachers (isTeacher) by branch
+ */
+router.get("/api/usersbybranch/:branch", (req, res) => {
+  api_user.getUserListByBranch(req, res);
 });
 
 router.delete("/api/user/:username", (req, res) => {

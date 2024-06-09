@@ -45,6 +45,10 @@ var UserSchema = new Schema({
   name: String,
   branch: String,
   email: String,
+  isTeacher: {
+    type: Boolean,
+    default: false,
+  },
   lessons: {
     type: [GroupSchema],
     default: [],

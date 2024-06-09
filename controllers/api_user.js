@@ -108,6 +108,7 @@ export async function registerUser(req, res, jwt) {
           role: user.role,
           token: "",
           created: util.getCurrentDateTime(),
+          isTeacher: user.isTeacher == "true" ? true : false,
         })
           .then((newUser) => {
             var us = createUser(newUser);
@@ -138,6 +139,22 @@ export function getUserListByGroup(req, res) {
   var filter = {
     branch: req.params.branch,
     "lessons.group": req.params.group,
+    isTeacher: true,
+  };
+  UserModel.find(filter)
+    .then((rusers) => {
+      var users = createUserList(rusers);
+      res.status(200).json(users);
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function getUserListByBranch(req, res) {
+  var filter = {
+    branch: req.params.branch,
+    isTeacher: true,
   };
   UserModel.find(filter)
     .then((rusers) => {
@@ -218,7 +235,7 @@ export async function setLessonsAvailabilitySingle(req, res, jwt) {
 }
 
 function createUser(user) {
-  return { name: user.name, branchName: util.codeToBranch(user.branch), branch: user.branch, email: user.email, username: user.username.toLowerCase(), role: user.role, created: util.getDateIL(user.created) };
+  return { name: user.name, branchName: util.codeToBranch(user.branch), branch: user.branch, email: user.email, isTeacher: user.isTeacher, username: user.username.toLowerCase(), role: user.role, created: util.getDateIL(user.created) };
 }
 
 export function createUserList(users) {
@@ -236,7 +253,7 @@ export function createUserList(users) {
       });
       lsns.push(grp);
     });
-    res.push({ name: user.name, branchName: util.codeToBranch(user.branch), branch: user.branch, email: user.email, username: user.username.toLowerCase(), role: user.role, created: dt, lessons: lsns });
+    res.push({ name: user.name, branchName: util.codeToBranch(user.branch), branch: user.branch, isTeacher: user.isTeacher, email: user.email, username: user.username.toLowerCase(), role: user.role, created: dt, lessons: lsns });
   });
   return res;
 }
@@ -360,7 +377,7 @@ export function saveUser(req, res, jwt) {
     returnOriginal: false,
   };
 
-  UserModel.findOneAndUpdate(filter, { $set: { role: user.role, email: user.email.trim().toLowerCase() } }, options)
+  UserModel.findOneAndUpdate(filter, { $set: { role: user.role, email: user.email.trim().toLowerCase(), isTeacher: user.isTeacher } }, options)
     .then((userRsp) => {
       if (!userRsp) {
         res.status(400).json({ msg: strings.err.failedUpdatingUser });
