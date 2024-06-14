@@ -236,6 +236,13 @@ export function saveLessonList(req, res, jwt) {
     });
 }
 
+/**
+ * Gets the list of lesson groups
+ * @param {*} req
+ * @param {*} res
+ * @param {*} jwt
+ * @returns
+ */
 export async function getLessonGroupList(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
@@ -366,6 +373,16 @@ export async function getForm(uid) {
 
 /////////////// FORMS
 
+/**
+ * Register lesson request by a student
+ * This API does not require login as it is used by students
+ */
+export function regiserLesson(req, res) {}
+
+/**
+ * Returns a list of forms for this branch
+ * If id is specified, only one will be returned.
+ */
 export async function getForms(req, res) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
@@ -382,6 +399,9 @@ export async function getForms(req, res) {
   res.status(200).json({ forms, groups });
 }
 
+/**
+ * Clone an existing form
+ */
 export async function cloneForm(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
@@ -430,6 +450,9 @@ export async function cloneForm(req, res, jwt) {
     });
 }
 
+/**
+ * Delete a given form
+ */
 export async function deleteForm(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
@@ -459,6 +482,9 @@ export async function deleteForm(req, res, jwt) {
     });
 }
 
+/**
+ * add a new form
+ */
 export async function addForm(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
@@ -484,6 +510,9 @@ export async function addForm(req, res, jwt) {
     });
 }
 
+/**
+ * update details of an existing form
+ */
 export function updateFormDetails(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {
@@ -529,6 +558,9 @@ export function updateFormDetails(req, res, jwt) {
     });
 }
 
+/**
+ * Saves an existing form (edit)
+ */
 export function saveForm(req, res, jwt) {
   // check if DB properly connected
   if (!req.app.get("db_connected")) {

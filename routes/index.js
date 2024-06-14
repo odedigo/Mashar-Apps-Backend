@@ -27,6 +27,9 @@ import strings from "../public/lang/strings.js";
 
 config({ path: "./config.env" });
 
+/**
+ * Handle upload to S3
+ */
 const storageGalS3 = multer({
   storage: multerS3({
     s3: awsS3.getS3Client(),
@@ -66,6 +69,9 @@ const storageMapS3 = multer({
 
 /********* API ********** LOGIN / LOGOUT / REGISTER ****************************************/
 
+/**
+ * Register new user
+ */
 router.post("/api/register", (req, res) => {
   //Err Site
   const jwt = util.validateAdminUser(req, true);
@@ -77,6 +83,9 @@ router.post("/api/register", (req, res) => {
   api_user.registerUser(req, res, jwt.jwtUser);
 });
 
+/**
+ * Login
+ */
 router.post("/api/login", (req, res) => {
   api_user.loginUser(req, res);
 });
@@ -111,6 +120,16 @@ router.get("/api/usersbygroup/:branch/:group", (req, res) => {
   api_user.getUserListByGroup(req, res);
 });
 
+/**
+ * User list by teachers (isTeacher) by branch
+ */
+router.get("/api/usersbybranch/:branch", (req, res) => {
+  api_user.getUserListByBranch(req, res);
+});
+
+/**
+ * Delete user
+ */
 router.delete("/api/user/:username", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid) return res.status(401).send();
@@ -122,22 +141,8 @@ router.delete("/api/user/:username", (req, res) => {
 });
 
 /**
- * User list by teachers (isTeacher) by branch
+ * Change user password
  */
-router.get("/api/usersbybranch/:branch", (req, res) => {
-  api_user.getUserListByBranch(req, res);
-});
-
-router.delete("/api/user/:username", (req, res) => {
-  const jwt = util.validateAdminUser(req, true);
-  if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
-    res.status(403);
-    return;
-  }
-  api_user.deleteUser(req, res, jwt.jwt);
-});
-
 router.post("/api/user/chgpass", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid) return res.status(401).send();
@@ -148,6 +153,9 @@ router.post("/api/user/chgpass", (req, res) => {
   api_user.changePassword(req, res, jwt.jwt);
 });
 
+/**
+ * Change user role
+ */
 router.post("/api/user/role", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid) return res.status(401).send();
@@ -163,6 +171,9 @@ router.post("/api/user/role", (req, res) => {
   api_user.changeRole(req, res, jwt.jwt);
 });
 
+/**
+ * Save user (edit)
+ */
 router.post("/api/user/save", (req, res) => {
   const jwt = util.validateAdminUser(req, true);
   if (!jwt.valid) return res.status(401).send();
@@ -327,6 +338,9 @@ router.post("/api/game/upmap/:uid/:branchCode/:teamColor", storageMapS3.single("
 
 /********************** MANAGEMENT ***********************************/
 
+/**
+ * Get branch list
+ */
 router.post("/api/branch/list", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -337,6 +351,9 @@ router.post("/api/branch/list", (req, res) => {
   api_mng.getBranchList(req, res, jwt.jwt);
 });
 
+/**
+ * Add branch
+ */
 router.post("/api/mng/branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -347,6 +364,9 @@ router.post("/api/mng/branch", (req, res) => {
   api_mng.addBranch(req, res, jwt.jwt);
 });
 
+/**
+ * Delete branch
+ */
 router.delete("/api/mng/branch/:code", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -357,6 +377,9 @@ router.delete("/api/mng/branch/:code", (req, res) => {
   api_mng.deleteBranch(req, res, jwt.jwt);
 });
 
+/**
+ * Upload gallery image
+ */
 router.put("/api/game/gallery/:branchCode", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -369,6 +392,9 @@ router.put("/api/game/gallery/:branchCode", function (req, res) {
   });
 });
 
+/**
+ * Delete gallary image
+ */
 router.delete("/api/game/gallery/:name/:branchCode", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -379,6 +405,11 @@ router.delete("/api/game/gallery/:name/:branchCode", (req, res) => {
   api_mng.handleGalleryDelete(req, res, jwt.jwt);
 });
 
+/********* API ********** PLAYLIST ****************************************/
+
+/**
+ * Get playlists
+ */
 router.get("/api/playlist/:page", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -389,6 +420,9 @@ router.get("/api/playlist/:page", function (req, res) {
   api_mng.getPlaylist(req, res, jwt.jwt);
 });
 
+/**
+ * Reorder playlists
+ */
 router.post("/api/playlist/order", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -399,6 +433,9 @@ router.post("/api/playlist/order", function (req, res) {
   api_mng.reorderPlaylist(req, res, jwt.jwt);
 });
 
+/**
+ * Add playlist
+ */
 router.post("/api/playlist/add", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -409,6 +446,9 @@ router.post("/api/playlist/add", function (req, res) {
   api_mng.addPlaylist(req, res, jwt.jwt);
 });
 
+/**
+ * Update details of a playlit
+ */
 router.post("/api/playlist/edit", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -419,6 +459,9 @@ router.post("/api/playlist/edit", function (req, res) {
   api_mng.editPlaylist(req, res, jwt.jwt);
 });
 
+/**
+ * Delete a playlist
+ */
 router.delete("/api/playlist/:code", function (req, res) {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -429,7 +472,10 @@ router.delete("/api/playlist/:code", function (req, res) {
   api_mng.deletePlaylist(req, res, jwt.jwt);
 });
 
-/********* API ********** LESSONS ACTIONS ****************************************/
+/********* API ********** LESSONS GROUPS ****************************************/
+/**
+ * Gets the list of lesson groups
+ */
 router.get("/api/lsn/groups/:branchCode/:page", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -440,6 +486,9 @@ router.get("/api/lsn/groups/:branchCode/:page", (req, res) => {
   api_lesson.getLessonGroupList(req, res, jwt.jwt);
 });
 
+/**
+ * Save lesson list for a specific user
+ */
 router.post("/api/lsn/savelist", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -513,15 +562,28 @@ router.put("/api/lsn/avail", (req, res) => {
   api_user.setLessonsAvailabilitySingle(req, res, jwt.jwt);
 });
 
-/********************** FORMS ****************************************/
+/********************** LESSON FORMS ****************************************/
+
+/**
+ * Returns a list of forms for this branch
+ * If id is specified, only one will be returned.
+ * This API does not require login as it is used by students
+ */
 router.get("/api/lsn/form/:branch/:id?", (req, res) => {
   api_lesson.getForms(req, res);
 });
 
-router.get("/api/lsn/reg/:branch/:id", (req, res) => {
+/**
+ * Register lesson request by a student
+ * This API does not require login as it is used by students
+ */
+router.put("/api/lsn/reg/:branch/:id", (req, res) => {
   api_lesson.registerLesson(req, res);
 });
 
+/**
+ * Clone an existing form
+ */
 router.get("/api/lsn/form/clone/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -532,6 +594,9 @@ router.get("/api/lsn/form/clone/:branch/:id", (req, res) => {
   api_lesson.cloneForm(req, res, jwt.jwt);
 });
 
+/**
+ * Delete a given form
+ */
 router.delete("/api/lsn/form/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -542,7 +607,9 @@ router.delete("/api/lsn/form/:branch/:id", (req, res) => {
   api_lesson.deleteForm(req, res, jwt.jwt);
 });
 
-// add a new form
+/**
+ * add a new form
+ */
 router.put("/api/lsn/form/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -553,7 +620,9 @@ router.put("/api/lsn/form/:branch", (req, res) => {
   api_lesson.addForm(req, res, jwt.jwt);
 });
 
-// update details of an existing form
+/**
+ * update details of an existing form
+ */
 router.post("/api/lsn/form/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
@@ -564,6 +633,9 @@ router.post("/api/lsn/form/:branch/:id", (req, res) => {
   api_lesson.updateFormDetails(req, res, jwt.jwt);
 });
 
+/**
+ * Saves an existing form (edit)
+ */
 router.put("/api/lsn/form/save/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();

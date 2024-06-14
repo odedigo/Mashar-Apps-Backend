@@ -23,7 +23,7 @@ const connectionParams = {
  * @return string - connection URL
  */
 function getDbUri(conf) {
-  return `${conf.protocol}://${process.env.DBUSER}:${process.env.DBPASS}@${conf.clusterURI}/${conf.dbname}?${conf.path}`;
+  return `${conf.protocol}://${process.env.DBUSER}:${process.env.DBPASS}@${process.env.DBHOST}/${process.env.DBNAME}?${conf.path}`;
 }
 
 /**
