@@ -14,6 +14,7 @@
 import { Roles, UserModel } from "../db/models/UserModel.js";
 import { LsnGroupModel } from "../db/models/LsnGroupModel.js";
 import { LsnFormModel } from "../db/models/LsnFormModel.js";
+import { LessonRegModel } from "../db/models/LsnRegModel.js";
 import strings from "../public/lang/strings.js";
 import config from "../config/config.js";
 import * as util from "../utils/util.js";
@@ -606,8 +607,6 @@ export function saveForm(req, res, jwt) {
     });
 }
 
-function registerLesson(req, res) {}
-
 function _createNewForm(branch, form, isNew) {
   form.qa.forEach((item) => {
     if (item.qid === "") item.qid = util.getUniqueGameUID();
@@ -632,4 +631,40 @@ function _updateFormDetails(branch, form, existingForm) {
   existingForm.active = form.active;
   (existingForm.date = util.getCurrentDateTime()), (existingForm.name = form.name);
   return existingForm;
+}
+
+/*************************** LESSON REGISTRATION **************************/
+
+export function registerLesson(req, res) {
+  const formData = req.body;
+  const branch = req.params.branch;
+
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var data = _createLessonReg(formData);
+  var model = LessonRegModel(data);
+  model
+    .save()
+    .then((reg) => {
+      if (reg) {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      } else res.status(400).json({ msg: strings.err.actionFailed });
+    })
+    .catch((error) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+function _createLessonReg(formData) {
+  var data = {
+    branch: formData.branch,
+    lesson_date_time: new Date(formData.lesson_date_time),
+    form_id: formData.uid,
+    group: formData.group,
+    data: formData.data,
+  };
+  return data;
 }

@@ -577,7 +577,7 @@ router.get("/api/lsn/form/:branch/:id?", (req, res) => {
  * Register lesson request by a student
  * This API does not require login as it is used by students
  */
-router.put("/api/lsn/reg/:branch/:id", (req, res) => {
+router.put("/api/lsn/reg/:branch", (req, res) => {
   api_lesson.registerLesson(req, res);
 });
 
