@@ -664,7 +664,41 @@ function _createLessonReg(formData) {
     lesson_date_time: new Date(formData.lesson_date_time),
     form_id: formData.uid,
     group: formData.group,
+    groupName: formData.groupName,
+    grade: formData.grade,
     data: formData.data,
+    teacher: formData.teacher,
+    curTeacher: formData.curTeacher,
   };
   return data;
+}
+
+export function getLessonRegInRange(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  const { group, branch } = req.params;
+  const { from, to } = req.body;
+  var fromDate = new Date(`${from}T00:00:00.000Z`);
+  var toDate = new Date(`${to}T00:00:00.000Z`);
+
+  var filter = {
+    branch,
+    lesson_date_time: { $gte: fromDate, $lt: toDate },
+  };
+  if (util.isValidValue(group)) filter["group"] = group;
+
+  LessonRegModel.find(filter)
+    .then((docs) => {
+      if (docs) {
+        res.status(200).json(docs);
+      } else {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      }
+    })
+    .catch((error) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
 }

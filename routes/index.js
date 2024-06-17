@@ -584,6 +584,19 @@ router.put("/api/lsn/reg/:branch", (req, res) => {
 /**
  * Clone an existing form
  */
+router.post("/api/lsn/reglist/:branch/:group?", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.getLessonRegInRange(req, res, jwt.jwt);
+});
+
+/**
+ * Clone an existing form
+ */
 router.get("/api/lsn/form/clone/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
