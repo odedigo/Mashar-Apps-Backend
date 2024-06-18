@@ -20,8 +20,8 @@ import config from "../config/config.js";
 import * as util from "../utils/util.js";
 import * as api_user from "../controllers/api_user.js";
 import { model } from "mongoose";
-import { response } from "express";
 import { Types } from "mongoose";
+import { sendMail, parseEmailTemplate } from "../utils/email.js";
 
 export function saveLessonGroups(req, res, jwt) {
   // check if DB properly connected
@@ -650,12 +650,49 @@ export function registerLesson(req, res) {
     .save()
     .then((reg) => {
       if (reg) {
+        var templateValues = _getTemplateValues(formData);
+        var to = config.email.sendOnlyToOded ? "oded.cnaan@gmail.com" : `${formData.curTeacher.email},${formData.teacher.email}`;
+        sendMail({
+          //to: ,
+          to,
+          subject: "עדכון שיעורי תיגבור",
+          html: parseEmailTemplate(config.email.lessonTemplate, templateValues),
+        });
         res.status(200).json({ msg: strings.ok.actionOK });
       } else res.status(400).json({ msg: strings.err.actionFailed });
     })
     .catch((error) => {
       res.status(400).json({ msg: strings.err.actionFailed });
     });
+}
+
+function _getTemplateValues(formData) {
+  try {
+    var list = [];
+    const student = formData.data.filter((q) => {
+      return q.type == "student";
+    });
+    list.push({ key: "%STUDENT%", value: student[0].answer });
+    list.push({ key: "%TEACHER%", value: formData.curTeacher.name });
+    list.push({ key: "%TUTOR%", value: formData.teacher.name });
+    list.push({
+      key: "%DATE%",
+      value: new Date(formData.lesson_date_time).toLocaleDateString("he-IL", {
+        timeZone: "Asia/Jerusalem",
+      }),
+    });
+    list.push({
+      key: "%TIME%",
+      value: new Date(formData.lesson_date_time).toLocaleTimeString("he-IL", {
+        timeZone: "Asia/Jerusalem",
+      }),
+    });
+    list.push({ key: "%LINK%", value: config.frontend.root });
+    return list;
+  } catch (err) {
+    console.log(err);
+    return "";
+  }
 }
 
 function _createLessonReg(formData) {

@@ -41,7 +41,7 @@ var QASchema = new Schema(
     q: String,
     type: {
       type: String,
-      enum: ["text", "select", "checkbox", "radio", "teachers", "availability"],
+      enum: ["text", "select", "checkbox", "radio", "teachers", "availability", "student"],
       default: "text",
       required: true,
     },
