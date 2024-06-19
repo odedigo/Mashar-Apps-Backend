@@ -659,6 +659,58 @@ router.put("/api/lsn/form/save/:branch/:id", (req, res) => {
   api_lesson.saveForm(req, res, jwt.jwt);
 });
 
+/**
+ * Delete a specific registration
+ */
+router.delete("/api/lsn/reg/single/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.deleteSingleReg(req, res, jwt.jwt);
+});
+
+/**
+ * Delete all registrations for a specific date and group
+ */
+router.delete("/api/lsn/reg/all/:branch/:group/:datetime/:email", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.deleteAllReg(req, res, jwt.jwt);
+});
+
+/**
+ * Delete old registrations
+ */
+router.delete("/api/lsn/reg/superold/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.deleteSuperAll(req, res, jwt.jwt, true);
+});
+
+/**
+ * Delete old registrations
+ */
+router.delete("/api/lsn/reg/superall/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [])) {
+    res.status(403);
+    return;
+  }
+  api_lesson.deleteSuperAll(req, res, jwt.jwt, false);
+});
+
 /********************** TOOLS ****************************************/
 
 /**

@@ -653,7 +653,6 @@ export function registerLesson(req, res) {
         var templateValues = _getTemplateValues(formData);
         var to = config.email.sendOnlyToOded ? "oded.cnaan@gmail.com" : `${formData.curTeacher.email},${formData.teacher.email}`;
         sendMail({
-          //to: ,
           to,
           subject: "עדכון שיעורי תיגבור",
           html: parseEmailTemplate(config.email.lessonTemplate, templateValues),
@@ -736,6 +735,98 @@ export function getLessonRegInRange(req, res, jwt) {
       }
     })
     .catch((error) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function deleteSingleReg(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var { id } = req.params;
+
+  var filter = {
+    _id: id,
+  };
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  const options = {};
+
+  // send query
+  LessonRegModel.findByIdAndDelete(id)
+    .then((doc) => {
+      if (!doc || doc.deleteCount == 0) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function deleteAllReg(req, res, jwt) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var { branch, group, datetime, email } = req.params;
+
+  var filter = {
+    branch,
+    group,
+    "teacher.email": email,
+    lesson_date_time: datetime,
+  };
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  const options = {};
+
+  // send query
+  LessonRegModel.deleteMany(filter)
+    .then((doc) => {
+      if (!doc || doc.deleteCount == 0) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function deleteSuperAll(req, res, jwt, onlyOld) {
+  // check if DB properly connected
+  if (!req.app.get("db_connected")) {
+    return res.status(500);
+  }
+
+  var { branch } = req.params;
+
+  var filter = {
+    branch,
+  };
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  if (onlyOld) {
+    filter["lesson_date_time"] = { $lt: new Date() };
+  }
+
+  // send query
+  LessonRegModel.deleteMany(filter)
+    .then((doc) => {
+      if (!doc || doc.deleteCount == 0) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
       res.status(400).json({ msg: strings.err.actionFailed });
     });
 }
