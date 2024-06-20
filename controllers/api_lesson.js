@@ -350,7 +350,7 @@ export function createLsnFormList(forms, group) {
   var frms = [];
   for (var i = 0; i < forms.length; i++) {
     var dt = util.isValidValue(forms[i].date) ? util.getDateIL(forms[i].date) : "";
-    var f = { uid: forms[i].uid, name: forms[i].name, active: forms[i].active, branchCode: forms[i].branch, branch: util.codeToBranch(forms[i].branch), date: dt, group: forms[i].group, qa: util.getQAFromForm(forms[i].qa), title: forms[i].title };
+    var f = { uid: forms[i].uid, name: forms[i].name, active: forms[i].active, settings: forms[i].settings, branchCode: forms[i].branch, branch: util.codeToBranch(forms[i].branch), date: dt, group: forms[i].group, qa: util.getQAFromForm(forms[i].qa), title: forms[i].title };
     if (group != null) {
       var g = getGroupFromArray(group, forms[i].group);
       if (g !== null) f.groupName = g.name;
@@ -361,7 +361,7 @@ export function createLsnFormList(forms, group) {
 }
 
 export function createEmptyForm(branch) {
-  var f = { uid: "-1", name: "שם הטופס", active: false, branchCode: branch, branch: util.codeToBranch(branch), date: util.getDateIL(new Date()), group: "", qa: [], title: "כותרת הטופס" };
+  var f = { uid: "-1", name: "שם הטופס", active: false, settings: { pauseTime: -1, maxStudents: -1 }, branchCode: branch, branch: util.codeToBranch(branch), date: util.getDateIL(new Date()), group: "", qa: [], title: "כותרת הטופס" };
   return f;
 }
 
@@ -618,6 +618,7 @@ function _createNewForm(branch, form, isNew) {
     date: util.getCurrentDateTime(),
     name: form.name,
     title: form.title !== "" ? form.title : "כותרת",
+    settings: form.settings,
     subtitle: form.subtitle !== "" ? form.subtitle : "תת כותרת",
     qa: form.qa,
     desc: form.desc,
@@ -635,7 +636,7 @@ function _updateFormDetails(branch, form, existingForm) {
 
 /*************************** LESSON REGISTRATION **************************/
 
-export function registerLesson(req, res) {
+export async function registerLesson(req, res) {
   const formData = req.body;
   const branch = req.params.branch;
 
@@ -645,6 +646,27 @@ export function registerLesson(req, res) {
   }
 
   var data = _createLessonReg(formData);
+
+  // Check restrictions on this session
+  var filter = {
+    branch: data.branch,
+    lesson_date_time: data.lesson_date_time,
+    group: data.group,
+    "teacher.email": data.teacher.email,
+  };
+  let numReg = await LessonRegModel.countDocuments(filter);
+  let frm = await LsnFormModel.findOne({ uid: data.form_id });
+  if (!util.isValidValue(frm) || !util.isValidValue(numReg)) {
+    res.status(400).json({ msg: strings.err.actionFailed });
+    return;
+  }
+
+  let settings = frm.settings;
+  if (settings.maxStudents !== -1 && numReg >= settings.maxStudents) {
+    res.status(404).json({ msg: strings.err.registrationFull });
+    return;
+  }
+
   var model = LessonRegModel(data);
   model
     .save()
@@ -698,7 +720,7 @@ function _createLessonReg(formData) {
   var data = {
     branch: formData.branch,
     lesson_date_time: new Date(formData.lesson_date_time),
-    form_id: formData.uid,
+    form_id: formData.form_id,
     group: formData.group,
     groupName: formData.groupName,
     grade: formData.grade,

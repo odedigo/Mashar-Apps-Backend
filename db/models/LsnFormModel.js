@@ -59,6 +59,11 @@ var QASchema = new Schema(
   { _id: false }
 );
 
+var LsnFormSettings = new Schema({
+  pauseTime: Number, // hours
+  maxStudents: Number,
+});
+
 var LsnFormSchema = new Schema({
   branch: String,
   group: String,
@@ -69,6 +74,7 @@ var LsnFormSchema = new Schema({
   title: String,
   subtitle: String,
   desc: String,
+  settings: LsnFormSettings,
   qa: [QASchema],
 });
 LsnFormSchema.set("collection", "lesson_form");

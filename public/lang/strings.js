@@ -68,6 +68,7 @@ const strings = {
     userUpdateErr: "עדכון משתמש נכשל",
     formNotFound: "הטופס לא נמצא",
     duplicatePlaylist: "הפלייליסט כבר קיים. בדקו שהקוד או הנושא לא קיימים כבר",
+    registrationFull: "קבוצת התיגבור מלאה ולא ניתן להרשם אליה. נסו קבוצה אחרת.",
   },
   gen: {
     yes: "כן",
