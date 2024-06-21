@@ -17,6 +17,7 @@ import * as api_user from "../controllers/api_user.js";
 import * as api_game from "../controllers/api_game.js";
 import * as api_mng from "../controllers/api_mng.js";
 import * as api_lesson from "../controllers/api_lesson.js";
+import * as api_holiday from "../controllers/api_holidays.js";
 import * as util from "../utils/util.js";
 import { Roles } from "../db/models/UserModel.js";
 import multer from "multer";
@@ -709,6 +710,85 @@ router.delete("/api/lsn/reg/superall/:branch", (req, res) => {
     return;
   }
   api_lesson.deleteSuperAll(req, res, jwt.jwt, false);
+});
+
+/********************** API HOLIDAYS ****************************************/
+/**
+ * Get list if holiday calendars
+ */
+router.get("/api/mng/cal/list/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_holiday.getHolidayCalendars(req, res, jwt.jwt);
+});
+
+/**
+ * Get specific holiday calendar
+ */
+router.get("/api/mng/cal/single/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_holiday.getHolidayCalendar(req, res, jwt.jwt);
+});
+
+/**
+ * add  holiday calendars
+ */
+router.put("/api/mng/cal/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_holiday.addHolidayCalendar(req, res, jwt.jwt);
+});
+
+/**
+ * clone holiday calendar
+ */
+router.post("/api/mng/cal/clone/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_holiday.cloneHolidayCalendar(req, res, jwt.jwt);
+});
+
+/**
+ * delete  holiday calendars
+ */
+router.delete("/api/mng/cal/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_holiday.deleteHolidayCalendar(req, res, jwt.jwt);
+});
+
+/**
+ * update  holiday calendars
+ */
+router.post("/api/mng/cal/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_holiday.updateHolidayCalendar(req, res, jwt.jwt);
 });
 
 /********************** TOOLS ****************************************/

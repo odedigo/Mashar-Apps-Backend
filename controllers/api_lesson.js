@@ -622,6 +622,7 @@ function _createNewForm(branch, form, isNew) {
     subtitle: form.subtitle !== "" ? form.subtitle : "תת כותרת",
     qa: form.qa,
     desc: form.desc,
+    holidayId: form.holidayId,
   };
   if (isNew) form["uid"] = util.getUniqueGameUID();
   return form;
@@ -630,6 +631,7 @@ function _createNewForm(branch, form, isNew) {
 function _updateFormDetails(branch, form, existingForm) {
   existingForm.group = form.group;
   existingForm.active = form.active;
+  existingForm.holidayId = form.holidayId;
   (existingForm.date = util.getCurrentDateTime()), (existingForm.name = form.name);
   return existingForm;
 }
@@ -779,7 +781,7 @@ export function deleteSingleReg(req, res, jwt) {
   // send query
   LessonRegModel.findByIdAndDelete(id)
     .then((doc) => {
-      if (!doc || doc.deleteCount == 0) {
+      if (!doc || doc.deletedCount == 0) {
         res.status(400).json({ msg: strings.err.actionFailed });
       } else {
         res.status(200).json({ msg: strings.ok.actionOK });
@@ -811,7 +813,7 @@ export function deleteAllReg(req, res, jwt) {
   // send query
   LessonRegModel.deleteMany(filter)
     .then((doc) => {
-      if (!doc || doc.deleteCount == 0) {
+      if (!doc || doc.deletedCount == 0) {
         res.status(400).json({ msg: strings.err.actionFailed });
       } else {
         res.status(200).json({ msg: strings.ok.actionOK });
@@ -842,7 +844,7 @@ export function deleteSuperAll(req, res, jwt, onlyOld) {
   // send query
   LessonRegModel.deleteMany(filter)
     .then((doc) => {
-      if (!doc || doc.deleteCount == 0) {
+      if (!doc || doc.deletedCount == 0) {
         res.status(400).json({ msg: strings.err.actionFailed });
       } else {
         res.status(200).json({ msg: strings.ok.actionOK });

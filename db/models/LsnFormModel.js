@@ -74,6 +74,7 @@ var LsnFormSchema = new Schema({
   title: String,
   subtitle: String,
   desc: String,
+  holidayId: String,
   settings: LsnFormSettings,
   qa: [QASchema],
 });
