@@ -16,6 +16,7 @@ var FormDataShema = new Schema({
   qid: String,
   answer: String,
   question: String,
+  type: String,
 });
 
 var TeacherSchema = new Schema({
