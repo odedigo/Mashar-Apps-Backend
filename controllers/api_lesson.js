@@ -632,6 +632,7 @@ function _updateFormDetails(branch, form, existingForm) {
   existingForm.group = form.group;
   existingForm.active = form.active;
   existingForm.holidayId = form.holidayId;
+  existingForm.settings = form.settings;
   (existingForm.date = util.getCurrentDateTime()), (existingForm.name = form.name);
   return existingForm;
 }
