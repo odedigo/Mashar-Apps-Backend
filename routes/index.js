@@ -17,6 +17,7 @@ import * as api_user from "../controllers/api_user.js";
 import * as api_game from "../controllers/api_game.js";
 import * as api_mng from "../controllers/api_mng.js";
 import * as api_lesson from "../controllers/api_lesson.js";
+import * as api_plan from "../controllers/api_plan.js";
 import * as api_holiday from "../controllers/api_holidays.js";
 import * as util from "../utils/util.js";
 import { Roles } from "../db/models/UserModel.js";
@@ -112,6 +113,19 @@ router.get("/api/users/:page/:branch?", (req, res) => {
     return;
   }
   api_user.getUserList(req.params.page, req, res, jwt.jwt);
+});
+
+/**
+ * Get user by username and branch
+ */
+router.get("/api/userbyusername/:branch/:username", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_user.getUserByUsername(req, res, jwt.jwt);
 });
 
 /**
@@ -473,6 +487,71 @@ router.post("/api/mng/sch/:branch/:id", (req, res) => {
   api_mng.updateSchool(req, res, jwt.jwt);
 });
 
+/*********API ********************* PLANNING AND CLASS ********************/
+/**
+ * Get list if classes
+ */
+router.get("/api/pln/cls/list/:branch/:teacher", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_plan.getClassList(req, res, jwt.jwt);
+});
+
+/**
+ * Get specific class
+ */
+router.get("/api/pln/cls/single/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_plan.getClass(req, res, jwt.jwt);
+});
+
+/**
+ * add class
+ */
+router.put("/api/pln/cls/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_plan.addClass(req, res, jwt.jwt);
+});
+
+/**
+ * delete class
+ */
+router.delete("/api/pln/cls/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_plan.deleteClass(req, res, jwt.jwt);
+});
+
+/**
+ * update class
+ */
+router.post("/api/pln/cls/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_plan.updateClass(req, res, jwt.jwt);
+});
 /********* API ********** PLAYLIST ****************************************/
 
 /**

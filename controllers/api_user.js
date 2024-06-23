@@ -135,6 +135,22 @@ export async function getUserList(page, req, res, jwt) {
     });
 }
 
+export async function getUserByUsername(req, res, jwt) {
+  var { username, branch } = req.params;
+
+  var filter = {
+    branch,
+    username,
+  };
+  UserModel.findOne(filter)
+    .then((ruser) => {
+      res.status(200).json(ruser);
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
 export function getUserListByGroup(req, res) {
   var filter = {
     branch: req.params.branch,
