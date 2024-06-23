@@ -406,6 +406,73 @@ router.delete("/api/game/gallery/:name/:branchCode", (req, res) => {
   api_mng.handleGalleryDelete(req, res, jwt.jwt);
 });
 
+//////// Schools
+
+/**
+ * Get list if schools
+ */
+router.get("/api/mng/sch/list/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_mng.getSchoolList(req, res, jwt.jwt);
+});
+
+/**
+ * Get specific school
+ */
+router.get("/api/mng/sch/single/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_mng.getSchool(req, res, jwt.jwt);
+});
+
+/**
+ * add school
+ */
+router.put("/api/mng/sch/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.addSchool(req, res, jwt.jwt);
+});
+
+/**
+ * delete school
+ */
+router.delete("/api/mng/sch/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.deleteSchool(req, res, jwt.jwt);
+});
+
+/**
+ * update School
+ */
+router.post("/api/mng/sch/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_mng.updateSchool(req, res, jwt.jwt);
+});
+
 /********* API ********** PLAYLIST ****************************************/
 
 /**

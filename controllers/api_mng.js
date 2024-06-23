@@ -16,10 +16,12 @@ import * as util from "../utils/util.js";
 import { Roles } from "../db/models/UserModel.js";
 import { BranchModel } from "../db/models/BranchModel.js";
 import { PlayListModel } from "../db/models/PlayListModel.js";
+import { SchoolModel } from "../db/models/SchoolModel.js";
 import * as aws from "../utils/awsS3.js";
 import * as api_user from "./api_user.js";
 import * as api_game from "./api_game.js";
 import config from "../config/config.js";
+import { mongoose, model, ObjectId, Types } from "mongoose";
 
 /**
  * Create a new branch or delete an existing one
@@ -358,4 +360,144 @@ export async function deletePlaylist(req, res, jwt) {
     .catch((err) => {
       res.status(400).json({ msg: strings.err.actionFailed });
     });
+}
+
+/******************* Schools */
+
+export function getSchoolList(req, res, jwt) {
+  var branch = req.params.branch;
+
+  if (jwt.role !== Roles.SUPERADMIN) branch = jwt.branch;
+
+  SchoolModel.find({ branch })
+    .then((docs) => {
+      if (!docs) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else res.status(200).json(docs);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function getSchool(req, res, jwt) {
+  var { branch, id } = req.params;
+
+  if (jwt.role !== Roles.SUPERADMIN) branch = jwt.branch;
+
+  var filter = {
+    branch,
+    _id: id,
+  };
+
+  SchoolModel.findOne(filter)
+    .then((docs) => {
+      if (!docs) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else res.status(200).json(docs);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function addSchool(req, res, jwt) {
+  var branch = req.params.branch;
+  var school = req.body;
+
+  if (jwt.role !== Roles.SUPERADMIN) branch = jwt.branch;
+
+  var newSchool = _createNewSchool(branch, school);
+  var model = new SchoolModel(newSchool);
+  model
+    .save()
+    .then((nSchool) => {
+      if (nSchool) {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      } else res.status(400).json({ msg: strings.err.actionFailed });
+    })
+    .catch((error) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function deleteSchool(req, res, jwt) {
+  var { id, branch } = req.params;
+  var _id = new mongoose.Types.ObjectId(id);
+
+  var filter = {
+    _id,
+    branch,
+  };
+
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  const options = {};
+
+  // send query
+  SchoolModel.deleteOne(filter)
+    .then((doc) => {
+      if (!doc || doc.deletedCount !== 1) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+export function updateSchool(req, res, jwt) {
+  var { id, branch } = req.params;
+  var _id = new mongoose.Types.ObjectId(id);
+  var school = req.body;
+
+  var filter = {
+    _id,
+    branch,
+  };
+
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  const options = {
+    upsert: true,
+    returnOriginal: false,
+    new: true,
+  };
+
+  const update = {
+    $set: { name: school.name, startYear: school.startYear, endYear: school.endYear, endSemester: school.endSemester, sector: school.sector, address: school.address, city: school.city, people: school.people, holidayId: school.holidayId }, // TODO !!!
+  };
+
+  // send query
+  SchoolModel.findOneAndUpdate(filter, update, options)
+    .then((doc) => {
+      if (!doc) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+function _createNewSchool(branch, school) {
+  var newSchool = {
+    branch,
+    name: school.name,
+    startYear: school.startYear,
+    endYear: school.endYear,
+    endSemester: school.endSemester,
+    sector: school.sector,
+    address: school.address,
+    city: school.city,
+    holidayId: school.holidayId,
+    people: school.people,
+  };
+  return newSchool;
 }
