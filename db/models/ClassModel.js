@@ -25,6 +25,7 @@ var AnnualPlanSchema = new Schema({
   },
   equip: String,
   comments: String,
+  isDone: Boolean,
 });
 
 var ClassLessonSchema = new Schema({
