@@ -19,6 +19,12 @@ var AnnualPlanSchema = new Schema({
   homework: String,
   homeworkMonitoring: [HwMonitorSchema],
   hasExperiment: Boolean,
+  event: {
+    type: String,
+    enum: ["שיעור", "מבחן", "הכנה למבחן", "אחר", "בוטל", "חג", "בגרות/מתכונת", "יום שיא"],
+  },
+  equip: String,
+  comments: String,
 });
 
 var ClassLessonSchema = new Schema({

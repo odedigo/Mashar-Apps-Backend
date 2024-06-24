@@ -515,6 +515,19 @@ router.get("/api/pln/cls/single/:branch/:id", (req, res) => {
 });
 
 /**
+ * Get specific class plan
+ */
+router.get("/api/pln/cls/plan/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_plan.getClassPlan(req, res, jwt.jwt);
+});
+
+/**
  * add class
  */
 router.put("/api/pln/cls/:branch", (req, res) => {
