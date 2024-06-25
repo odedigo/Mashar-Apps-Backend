@@ -23,6 +23,7 @@ var AnnualPlanSchema = new Schema({
     type: String,
     enum: ["שיעור", "מבחן", "הכנה למבחן", "אחר", "בוטל", "חג", "בגרות/מתכונת", "יום שיא"],
   },
+  note: String,
   equip: String,
   comments: String,
   isDone: Boolean,
