@@ -21,7 +21,7 @@ var AnnualPlanSchema = new Schema({
   hasExperiment: Boolean,
   event: {
     type: String,
-    enum: ["שיעור", "מבחן", "הכנה למבחן", "אחר", "בוטל", "חג", "בגרות/מתכונת", "יום שיא"],
+    enum: ["שיעור", "מבחן", "הכנה למבחן", "אחר", "בוטל", "חג", "בגרות/מתכונת", "יום שיא", "פאבלאב", "מיוחד"],
   },
   note: String,
   equip: String,
