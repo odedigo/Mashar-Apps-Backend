@@ -12,15 +12,13 @@
 "use strict";
 //================ IMPORTS =================
 import strings from "../public/lang/strings.js";
-import * as util from "../utils/util.js";
 import { Roles, UserModel } from "../db/models/UserModel.js";
-import { BranchModel } from "../db/models/BranchModel.js";
 import { SchoolModel } from "../db/models/SchoolModel.js";
 import { ClassModel } from "../db/models/ClassModel.js";
 import { HolidayModel } from "../db/models/HolidayModel.js";
-import * as api_user from "./api_user.js";
-import config from "../config/config.js";
 import { mongoose, model, ObjectId, Types } from "mongoose";
+import * as util from "../utils/util.js";
+import xlsx from "node-xlsx";
 
 /**
  * Get list of holiday calendars
@@ -318,7 +316,86 @@ export function updateClass(req, res, jwt) {
     });
 }
 
-function importStudents(req, res, jwt) {}
+export function importStudents(req, res, jwt) {
+  const file = req.file;
+  const { school, clsid } = req.body;
+  const branch = req.params.branch;
+
+  if (!util.isValidValue(file)) {
+    res.status(200).status({ msg: strings.err.actionFailed });
+    return;
+  }
+  let data = xlsx.parse(file.buffer);
+  // Data should have a single array item with all the data (one sheet)
+  if (!util.isValidValue(data) || data.length !== 1 || !util.isValidValue(data[0].data)) {
+    res.status(200).status({ msg: strings.err.actionFailed });
+    return;
+  }
+
+  var excel = data[0].data;
+  var headers = excel[2];
+
+  var students = [];
+  for (let row = 3; row < excel.length - 5; row++) {
+    var stud = _createStudentFroExcel(excel[row], school);
+    students.push(stud);
+  }
+
+  var filter = {
+    _id: clsid,
+    branch,
+  };
+
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  const options = {
+    upsert: true,
+    returnOriginal: false,
+    new: true,
+  };
+
+  const update = {
+    $push: { students },
+  };
+
+  // send query
+  ClassModel.findOneAndUpdate(filter, update, options)
+    .then((doc) => {
+      if (!doc) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        console.log(doc.students.length);
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+function _createStudentFroExcel(rowData, school) {
+  var mapping = {
+    name: 2,
+    gender: 3,
+    classNum: 5,
+    majors: 20,
+  };
+
+  var st = {
+    name: rowData[mapping.name],
+    gender: rowData[mapping.gender] == "ז" ? "m" : "f",
+    classNum: rowData[mapping.classNum],
+    majors: rowData[mapping.majors],
+    status: "פעיל",
+    school,
+    benefits: "",
+    comments: "יובא ממשוב",
+    evaluation: [],
+    finals: [],
+  };
+  return st;
+}
 
 function _createNewClass(branch, cls) {
   var newCls = {

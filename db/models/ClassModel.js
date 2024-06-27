@@ -59,7 +59,6 @@ var Student = new Schema({
   classNum: String,
   benefits: String,
   majors: String,
-  extensions: [String],
   comments: String,
   evaluation: [Evaluation],
   finals: [Evaluation],

@@ -69,6 +69,10 @@ const storageMapS3 = multer({
   }),
 });
 
+const uploadMemory = multer({
+  storage: multer.memoryStorage({}),
+});
+
 /********* API ********** LOGIN / LOGOUT / REGISTER ****************************************/
 
 /**
@@ -581,10 +585,10 @@ router.post("/api/pln/cls/:branch/:id", (req, res) => {
 
 /**
  * import excel with students */
-router.post("/api/cls/importstd/:branch", (req, res) => {
+router.post("/api/cls/importstd/:branch", uploadMemory.single("file"), (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
   }
