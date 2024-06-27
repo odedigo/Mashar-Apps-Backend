@@ -13,7 +13,7 @@
 //================ IMPORTS =================
 import strings from "../public/lang/strings.js";
 import * as util from "../utils/util.js";
-import { Roles } from "../db/models/UserModel.js";
+import { Roles, UserModel } from "../db/models/UserModel.js";
 import { BranchModel } from "../db/models/BranchModel.js";
 import { SchoolModel } from "../db/models/SchoolModel.js";
 import { ClassModel } from "../db/models/ClassModel.js";
@@ -62,10 +62,12 @@ export function getClass(req, res, jwt) {
   };
 
   ClassModel.findOne(filter)
-    .then((docs) => {
-      if (!docs) {
+    .then((theCls) => {
+      if (!theCls) {
         res.status(400).json({ msg: strings.err.actionFailed });
-      } else res.status(200).json(docs);
+      } else {
+        res.status(200).json(theCls);
+      }
     })
     .catch((error) => {
       console.log(error);
@@ -121,7 +123,81 @@ export function getClassPlan(req, res, jwt) {
                   return;
                 }
                 // ALL OK
-                res.status(200).json({ classModel, schools, holiday });
+                var clsModel = classModel.toObject();
+                //delete clsModel.students;
+
+                res.status(200).json({ classModel: clsModel, schools, holiday });
+              })
+              .catch((errHol) => {
+                res.status(400).json({ msg: strings.err.actionFailed });
+              });
+          })
+          .catch((errSchool) => {
+            res.status(400).json({ msg: strings.err.actionFailed });
+          });
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+/**
+ * Get a specific class with info
+ * @param {*} req
+ * @param {*} res
+ * @param {*} jwt
+ */
+export function getClassInfo(req, res, jwt) {
+  var { branch, id } = req.params;
+
+  if (jwt.role !== Roles.SUPERADMIN) branch = jwt.branch;
+
+  var filter = {
+    branch,
+    _id: id,
+  };
+
+  ClassModel.findOne(filter)
+    .then((classModel) => {
+      if (!classModel) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        var list = [];
+        classModel.school.forEach((s) => {
+          list.push(s);
+        });
+
+        var filter = {
+          branch: classModel.branch,
+        };
+
+        SchoolModel.find(filter)
+          .then((schools) => {
+            if (!schools) {
+              res.status(400).json({ msg: strings.err.actionFailed });
+              return;
+            }
+            var filter = {
+              branch: classModel.branch,
+              username: classModel.teacher,
+            };
+            UserModel.findOne(filter)
+              .then((teach) => {
+                if (!teach) {
+                  res.status(400).json({ msg: strings.err.actionFailed });
+                  return;
+                }
+                // ALL OK
+                var clsModel = classModel.toObject();
+                var teacher = {
+                  username: teach.username,
+                  name: teach.name,
+                  email: teach.email,
+                };
+
+                res.status(200).json({ classModel: clsModel, schools, teacher });
               })
               .catch((errHol) => {
                 res.status(400).json({ msg: strings.err.actionFailed });
@@ -221,6 +297,8 @@ export function updateClass(req, res, jwt) {
     new: true,
   };
 
+  cls.students.forEach((s) => delete s._id);
+
   const update = {
     $set: { branch, name: cls.name, year: cls.year, teacher: cls.teacher, school: cls.school, grade: cls.grade, comments: cls.comments, lessons: cls.lessons, plan: cls.plan, students: cls.students },
   };
@@ -235,9 +313,12 @@ export function updateClass(req, res, jwt) {
       }
     })
     .catch((err) => {
+      console.log(err);
       res.status(400).json({ msg: strings.err.actionFailed });
     });
 }
+
+function importStudents(req, res, jwt) {}
 
 function _createNewClass(branch, cls) {
   var newCls = {

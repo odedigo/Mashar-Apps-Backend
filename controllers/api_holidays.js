@@ -190,7 +190,7 @@ export function updateHolidayCalendar(req, res, jwt) {
   };
 
   const update = {
-    $set: { name: cal.name, from: cal.from, to: cal.to, holidays: cal.holidays },
+    $set: { name: cal.name, from: cal.from, to: cal.to, holidays: cal.holidays, sector: cal.sector },
   };
 
   // send query
@@ -213,6 +213,7 @@ function _createNewCalendar(branch, cal) {
     name: cal.name,
     year: cal.year,
     holidays: cal.holidays,
+    sector: cal.sector,
   };
   return newCal;
 }

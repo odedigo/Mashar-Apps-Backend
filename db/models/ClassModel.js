@@ -35,6 +35,36 @@ var ClassLessonSchema = new Schema({
   duration: Number,
 });
 
+var Evaluation = new Schema({
+  name: String,
+  etype: String,
+  grade: Number,
+  gradeText: String,
+  percent: Number,
+  active: Boolean,
+  when: Date,
+});
+
+var Student = new Schema({
+  name: String,
+  status: {
+    type: String,
+    enum: ["פעיל", "עזב", "עבר קבוצה"],
+  },
+  gender: {
+    type: String,
+    enum: ["m", "f"],
+  },
+  school: String,
+  classNum: String,
+  benefits: String,
+  majors: String,
+  extensions: [String],
+  comments: String,
+  evaluation: [Evaluation],
+  finals: [Evaluation],
+});
+
 var ClassSchema = new Schema({
   teacher: String,
   year: String,
@@ -48,7 +78,7 @@ var ClassSchema = new Schema({
   comments: String,
   lessons: [ClassLessonSchema],
   plan: [AnnualPlanSchema],
-  students: [String],
+  students: [Student],
 });
 ClassSchema.set("collection", "classes");
 

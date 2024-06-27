@@ -515,6 +515,19 @@ router.get("/api/pln/cls/single/:branch/:id", (req, res) => {
 });
 
 /**
+ * Get specific class with schools
+ */
+router.get("/api/pln/cls/info/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_plan.getClassInfo(req, res, jwt.jwt);
+});
+
+/**
  * Get specific class plan
  */
 router.get("/api/pln/cls/plan/:branch/:id", (req, res) => {
@@ -565,6 +578,19 @@ router.post("/api/pln/cls/:branch/:id", (req, res) => {
   }
   api_plan.updateClass(req, res, jwt.jwt);
 });
+
+/**
+ * import excel with students */
+router.post("/api/cls/importstd/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_plan.importStudents(req, res, jwt.jwt);
+});
+
 /********* API ********** PLAYLIST ****************************************/
 
 /**
