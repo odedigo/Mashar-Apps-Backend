@@ -177,11 +177,6 @@ export async function getBranchList(req, res, jwt) {
     return res.status(500);
   }
 
-  // only super-admins can get data on games not in their branch
-  if (jwt.role === Roles.TEACHER || jwt.role === Roles.ADMIN) {
-    return res.status(400).json({ msg: strings.err.invalidAction });
-  }
-
   var brch = await BranchModel.find();
   const branches = createBranches(brch);
 
@@ -195,7 +190,7 @@ export async function getBranchList(req, res, jwt) {
     var br = branches.filter((b) => b.code == key);
     if (br.length === 1) br[0].used = true;
   });
-  res.status(200).json({ branches });
+  res.status(200).json(branches);
 }
 
 function createBranches(brch) {

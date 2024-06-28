@@ -19,6 +19,7 @@ import * as api_mng from "../controllers/api_mng.js";
 import * as api_lesson from "../controllers/api_lesson.js";
 import * as api_plan from "../controllers/api_plan.js";
 import * as api_holiday from "../controllers/api_holidays.js";
+import * as api_exam from "../controllers/api_exam.js";
 import * as util from "../utils/util.js";
 import { Roles } from "../db/models/UserModel.js";
 import multer from "multer";
@@ -363,7 +364,7 @@ router.post("/api/game/upmap/:uid/:branchCode/:teamColor", storageMapS3.single("
 router.post("/api/branch/list", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.SUPERADMIN])) {
+  if (!validateRoleAllowed(req, [Roles.TEACHER, Roles.ADMIN])) {
     res.status(403);
     return;
   }
@@ -550,7 +551,7 @@ router.get("/api/pln/cls/plan/:branch/:id", (req, res) => {
 router.put("/api/pln/cls/:branch", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
   }
@@ -563,7 +564,7 @@ router.put("/api/pln/cls/:branch", (req, res) => {
 router.delete("/api/pln/cls/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
   }
@@ -576,7 +577,7 @@ router.delete("/api/pln/cls/:branch/:id", (req, res) => {
 router.post("/api/pln/cls/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
   }
@@ -978,6 +979,85 @@ router.post("/api/mng/cal/:branch/:id", (req, res) => {
     return;
   }
   api_holiday.updateHolidayCalendar(req, res, jwt.jwt);
+});
+
+/********************** API EXAMS ****************************************/
+/**
+ * Get list if exams
+ */
+router.get("/api/pln/exm/list/:branch/:year", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_exam.getExamList(req, res, jwt.jwt);
+});
+
+/**
+ * Get specific exam
+ */
+router.get("/api/pln/exm/single/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_exam.getExam(req, res, jwt.jwt);
+});
+
+/**
+ * add  exam
+ */
+router.put("/api/pln/exm/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_exam.addExam(req, res, jwt.jwt);
+});
+
+/**
+ * clone exam
+ */
+router.post("/api/pln/exm/clone/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_exam.cloneExam(req, res, jwt.jwt);
+});
+
+/**
+ * delete  exam
+ */
+router.delete("/api/pln/exm/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_exam.deleteExam(req, res, jwt.jwt);
+});
+
+/**
+ * update  exam
+ */
+router.post("/api/pln/exm/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_exam.updateExam(req, res, jwt.jwt);
 });
 
 /********************** TOOLS ****************************************/

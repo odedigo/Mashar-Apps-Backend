@@ -38,9 +38,10 @@ var ClassLessonSchema = new Schema({
 var Evaluation = new Schema({
   name: String,
   etype: String,
+  examId: String,
   grade: Number,
   gradeText: String,
-  percent: Number,
+  questionGrades: [Number],
   active: Boolean,
   when: Date,
 });
