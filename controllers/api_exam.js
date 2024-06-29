@@ -42,6 +42,38 @@ export function getExamList(req, res, jwt) {
 }
 
 /**
+ * Get list of holiday calendars
+ * @param {*} req
+ * @param {*} res
+ * @param {*} jwt
+ */
+export function getExamListFilter(req, res, jwt) {
+  var { branch } = req.params;
+  var params = req.body;
+
+  if (jwt.role !== Roles.SUPERADMIN) branch = jwt.branch;
+
+  var filter = {
+    branch,
+  };
+
+  Object.keys(params).forEach((key) => {
+    filter[key] = params[key];
+  });
+
+  ExamModel.find(filter)
+    .then((docs) => {
+      if (!docs) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else res.status(200).json(docs);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+/**
  * Get a specific holiday calendar
  * @param {*} req
  * @param {*} res
@@ -190,7 +222,7 @@ export function updateExam(req, res, jwt) {
   };
 
   const update = {
-    $set: { name: exam.name, link: exam.link, subject: exam.subject, year: exam.year, classGrade: exam.classGrade, grades: exam.grades, period: exam.period, comments: exam.comments },
+    $set: { name: exam.name, ref: exam.ref, link: exam.link, evalType: exam.evalType, isPrivate: exam.isPrivate, subject: exam.subject, chance: exam.chance, year: exam.year, classGrade: exam.classGrade, questions: exam.questions, period: exam.period, comments: exam.comments, date: exam.date },
   };
 
   // send query
@@ -215,9 +247,14 @@ function _createNewExam(branch, exam) {
     subject: exam.subject,
     link: exam.link,
     classGrade: exam.classGrade,
-    grades: exam.grades,
+    questions: exam.questions,
     comments: exam.comments,
     period: exam.period,
+    date: exam.date,
+    chance: exam.chance,
+    isPrivate: exam.isPrivate,
+    evalType: exam.evalType,
+    ref: exam.ref,
   };
   return newExam;
 }

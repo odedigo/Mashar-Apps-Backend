@@ -996,6 +996,19 @@ router.get("/api/pln/exm/list/:branch/:year", (req, res) => {
 });
 
 /**
+ * Get list if exams
+ */
+router.post("/api/pln/exm/filter/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_exam.getExamListFilter(req, res, jwt.jwt);
+});
+
+/**
  * Get specific exam
  */
 router.get("/api/pln/exm/single/:branch/:id", (req, res) => {

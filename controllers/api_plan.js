@@ -296,9 +296,10 @@ export function updateClass(req, res, jwt) {
   };
 
   cls.students.forEach((s) => delete s._id);
+  cls.examEvents.forEach((e) => delete e._id);
 
   const update = {
-    $set: { branch, name: cls.name, year: cls.year, teacher: cls.teacher, school: cls.school, grade: cls.grade, comments: cls.comments, lessons: cls.lessons, plan: cls.plan, students: cls.students },
+    $set: { branch, name: cls.name, examEvents: cls.examEvents, year: cls.year, teacher: cls.teacher, school: cls.school, grade: cls.grade, comments: cls.comments, lessons: cls.lessons, plan: cls.plan, students: cls.students },
   };
 
   // send query
@@ -409,6 +410,7 @@ function _createNewClass(branch, cls) {
     lessons: cls.lessons,
     plan: cls.plan,
     students: cls.students,
+    examEvents: cls.examEvents,
   };
   return newCls;
 }

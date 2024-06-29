@@ -1,6 +1,7 @@
 "use strict";
 //================ IMPORTS =================
 import { mongoose, Schema, model } from "mongoose";
+import { ExamSchema } from "./ExamModel.js";
 
 var HwMonitorSchema = new Schema({
   student: String,
@@ -35,15 +36,17 @@ var ClassLessonSchema = new Schema({
   duration: Number,
 });
 
+var Grade = new Schema({
+  question: Number,
+  subsection: Number,
+  grade: Number,
+});
+
 var Evaluation = new Schema({
-  name: String,
-  etype: String,
-  examId: String,
+  examEvent: String,
   grade: Number,
   gradeText: String,
-  questionGrades: [Number],
-  active: Boolean,
-  when: Date,
+  questionGrades: [Grade],
 });
 
 var Student = new Schema({
@@ -79,6 +82,7 @@ var ClassSchema = new Schema({
   lessons: [ClassLessonSchema],
   plan: [AnnualPlanSchema],
   students: [Student],
+  examEvents: [ExamSchema],
 });
 ClassSchema.set("collection", "classes");
 
