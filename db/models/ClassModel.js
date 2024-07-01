@@ -85,7 +85,18 @@ var ClassSchema = new Schema({
   examEvents: [ExamSchema],
 });
 ClassSchema.set("collection", "classes");
-
 // Compile model from schema
 const ClassModel = model("ClassModel", ClassSchema);
-export { ClassModel };
+
+var PlanTemplateScheme = new Schema({
+  name: String,
+  grade: String,
+  branch: String,
+  template: [AnnualPlanSchema],
+  version: Number,
+});
+PlanTemplateScheme.set("collection", "templates");
+// Compile model from schema
+const PlanTemplateModel = model("PlanTemplateModel", PlanTemplateScheme);
+
+export { ClassModel, PlanTemplateModel };

@@ -211,6 +211,7 @@ export function updateExam(req, res, jwt) {
   var filter = {
     _id,
     branch,
+    version: exam.version,
   };
 
   if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
@@ -221,8 +222,14 @@ export function updateExam(req, res, jwt) {
     new: true,
   };
 
+  var data = {};
+  for (const [key, value] of Object.entries(exam)) {
+    if (key !== "_id" && key !== "__v" && key !== "dataModel" && key !== "version") data[key] = value;
+  }
+
   const update = {
-    $set: { name: exam.name, ref: exam.ref, link: exam.link, evalType: exam.evalType, isPrivate: exam.isPrivate, subject: exam.subject, chance: exam.chance, year: exam.year, classGrade: exam.classGrade, questions: exam.questions, period: exam.period, comments: exam.comments, date: exam.date },
+    $set: data,
+    $inc: { version: 1 },
   };
 
   // send query
@@ -246,6 +253,7 @@ function _createNewExam(branch, exam) {
     year: exam.year,
     subject: exam.subject,
     link: exam.link,
+    isFinalLink: exam.isFinalLink,
     classGrade: exam.classGrade,
     questions: exam.questions,
     comments: exam.comments,
@@ -255,6 +263,10 @@ function _createNewExam(branch, exam) {
     isPrivate: exam.isPrivate,
     evalType: exam.evalType,
     ref: exam.ref,
+    typicalMistakes: exam.typicalMistakes,
+    suggestions: exam.suggestions,
+    owner: exam.owner,
+    version: 0,
   };
   return newExam;
 }

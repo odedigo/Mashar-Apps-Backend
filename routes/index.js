@@ -18,6 +18,7 @@ import * as api_game from "../controllers/api_game.js";
 import * as api_mng from "../controllers/api_mng.js";
 import * as api_lesson from "../controllers/api_lesson.js";
 import * as api_plan from "../controllers/api_plan.js";
+import * as api_template from "../controllers/api_template.js";
 import * as api_holiday from "../controllers/api_holidays.js";
 import * as api_exam from "../controllers/api_exam.js";
 import * as util from "../utils/util.js";
@@ -492,6 +493,73 @@ router.post("/api/mng/sch/:branch/:id", (req, res) => {
   api_mng.updateSchool(req, res, jwt.jwt);
 });
 
+//////// Templates
+
+/**
+ * Get list if templates
+ */
+router.get("/api/mng/tmpl/list/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_template.getPlanTemplateList(req, res, jwt.jwt);
+});
+
+/**
+ * Get specific template
+ */
+router.get("/api/mng/tmpl/single/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_template.getPlanTemplate(req, res, jwt.jwt);
+});
+
+/**
+ * add template
+ */
+router.put("/api/mng/tmpl/:branch", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_template.addPlanTemplate(req, res, jwt.jwt);
+});
+
+/**
+ * delete template
+ */
+router.delete("/api/mng/tmpl/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_template.deletePlanTemplate(req, res, jwt.jwt);
+});
+
+/**
+ * update template
+ */
+router.post("/api/mng/tmpl/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+    res.status(403);
+    return;
+  }
+  api_template.updatePlanTemplate(req, res, jwt.jwt);
+});
+
 /*********API ********************* PLANNING AND CLASS ********************/
 /**
  * Get list if classes
@@ -582,6 +650,19 @@ router.post("/api/pln/cls/:branch/:id", (req, res) => {
     return;
   }
   api_plan.updateClass(req, res, jwt.jwt);
+});
+
+/**
+ * update class
+ */
+router.post("/api/pln/clsstd/:branch/:id", (req, res) => {
+  const jwt = util.validateAdminUser(req, false);
+  if (!jwt.valid) return res.status(401).send();
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
+    res.status(403);
+    return;
+  }
+  api_plan.updateClassStudent(req, res, jwt.jwt);
 });
 
 /**
@@ -1066,7 +1147,7 @@ router.delete("/api/pln/exm/:branch/:id", (req, res) => {
 router.post("/api/pln/exm/:branch/:id", (req, res) => {
   const jwt = util.validateAdminUser(req, false);
   if (!jwt.valid) return res.status(401).send();
-  if (!validateRoleAllowed(req, [Roles.ADMIN])) {
+  if (!validateRoleAllowed(req, [Roles.ADMIN, Roles.TEACHER])) {
     res.status(403);
     return;
   }

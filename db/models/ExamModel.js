@@ -31,6 +31,16 @@ const ExamQuestions = new Schema(
   { _id: false }
 );
 
+var Mistake = new Schema({
+  owner: String,
+  text: String,
+});
+
+var Suggestion = new Schema({
+  owner: String,
+  text: String,
+});
+
 var ExamSchema = new Schema({
   name: String,
   date: Date,
@@ -38,6 +48,7 @@ var ExamSchema = new Schema({
   branch: String,
   year: String,
   link: String,
+  isFinalLink: Boolean,
   classGrade: String,
   period: {
     type: String,
@@ -49,6 +60,10 @@ var ExamSchema = new Schema({
   isPrivate: Boolean,
   evalType: String, // manual or not
   ref: String, // ref to branch event
+  typicalMistakes: [Mistake],
+  suggestions: [Suggestion],
+  owner: String,
+  version: Number,
 });
 ExamSchema.set("collection", "exams");
 

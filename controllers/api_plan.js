@@ -279,7 +279,7 @@ export function deleteClass(req, res, jwt) {
  */
 export function updateClass(req, res, jwt) {
   var { id, branch } = req.params;
-  var _id = new mongoose.Types.ObjectId(id);
+  var _id = id; //new mongoose.Types.ObjectId(id);
   var cls = req.body;
 
   var filter = {
@@ -295,11 +295,79 @@ export function updateClass(req, res, jwt) {
     new: true,
   };
 
-  cls.students.forEach((s) => delete s._id);
-  cls.examEvents.forEach((e) => delete e._id);
+  cls.examEvents.forEach((e) => {
+    //if (e.isPrivate && e.ref == "") e.ref = e._id;
+    delete e._id;
+  });
+  cls.students.forEach((st) => {
+    delete st._id;
+    st.evaluation.forEach((e) => delete e._id);
+  });
+  cls.plan.forEach((p) => {
+    delete p._id;
+  });
+
+  var data = {};
+  for (const [key, value] of Object.entries(cls)) {
+    if (key !== "_id" && key !== "__v" && key !== "version") data[key] = value;
+  }
 
   const update = {
-    $set: { branch, name: cls.name, examEvents: cls.examEvents, year: cls.year, teacher: cls.teacher, school: cls.school, grade: cls.grade, comments: cls.comments, lessons: cls.lessons, plan: cls.plan, students: cls.students },
+    $set: data,
+    //{ branch, name: cls.name, examEvents: cls.examEvents, year: cls.year, teacher: cls.teacher, school: cls.school, grade: cls.grade, comments: cls.comments, lessons: cls.lessons, plan: cls.plan, students: cls.students },
+  };
+
+  // send query
+  ClassModel.findOneAndUpdate(filter, update, options)
+    .then((doc) => {
+      if (!doc) {
+        res.status(400).json({ msg: strings.err.actionFailed });
+      } else {
+        res.status(200).json({ msg: strings.ok.actionOK });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ msg: strings.err.actionFailed });
+    });
+}
+
+/**
+ * Update an existing holiday calendar
+ * @param {*} req
+ * @param {*} res
+ * @param {*} jwt
+ */
+export function updateClassStudent(req, res, jwt) {
+  var { id, branch } = req.params;
+  var _id = id; //new mongoose.Types.ObjectId(id);
+  var student = req.body;
+
+  var filter = {
+    _id,
+    branch,
+    "students._id": student._id,
+  };
+
+  if (jwt.role !== Roles.SUPERADMIN) filter.branch = jwt.branch;
+
+  const options = {
+    upsert: true,
+    returnOriginal: false,
+    new: true,
+  };
+
+  delete student._id;
+  student.evaluation.forEach((e) => delete e._id);
+
+  var data = {};
+  for (const [key, value] of Object.entries(student)) {
+    let k = `students.$.${key}`;
+    if (key !== "_id" && key !== "__v" && key !== "version") data[k] = value;
+  }
+
+  const update = {
+    $set: data,
   };
 
   // send query
